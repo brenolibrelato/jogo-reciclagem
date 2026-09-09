@@ -12,15 +12,19 @@ public class Rodada {
     private final List<Item> opcoes;
     private final int tentativaAtual;
     private final int pontosProximaTentativa;
+    private final String dificuldade;
+    private final int tempoLimiteSegundos;
 
     public Rodada(int numeroRodada, int totalRodadas, Lixeira lixeira, List<Item> opcoes,
-                   int tentativaAtual, int pontosProximaTentativa) {
+                   int tentativaAtual, int pontosProximaTentativa, String dificuldade, int tempoLimiteSegundos) {
         this.numeroRodada = numeroRodada;
         this.totalRodadas = totalRodadas;
         this.lixeira = lixeira;
         this.opcoes = opcoes;
         this.tentativaAtual = tentativaAtual;
         this.pontosProximaTentativa = pontosProximaTentativa;
+        this.dificuldade = dificuldade;
+        this.tempoLimiteSegundos = tempoLimiteSegundos;
     }
 
     public int getNumeroRodada() {
@@ -45,5 +49,13 @@ public class Rodada {
 
     public int getPontosProximaTentativa() {
         return pontosProximaTentativa;
+    }
+
+    public String getDificuldade() {
+        return dificuldade;
+    }
+
+    public int getTempoLimiteSegundos() {
+        return tempoLimiteSegundos;
     }
 }

@@ -3,10 +3,17 @@ package com.reciclagem.jogo.service;
 import com.reciclagem.jogo.dto.IniciarJogoResponse;
 import com.reciclagem.jogo.dto.ResultadoJogada;
 import com.reciclagem.jogo.dto.Rodada;
+import com.reciclagem.jogo.dto.TempoEsgotadoResponse;
+import com.reciclagem.jogo.model.Dificuldade;
 import com.reciclagem.jogo.model.Item;
 import com.reciclagem.jogo.model.Lixeira;
+import com.reciclagem.jogo.model.RankingEntry;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,10 +32,21 @@ public class JogoService {
     private final List<Item> itens;
     private final List<Lixeira> lixeiras;
     private final Map<String, SessaoJogo> sessoes = new ConcurrentHashMap<>();
+    private final RankingService rankingService;
+    private final int timeoutSessaoMinutos;
 
-    public JogoService() {
+    public JogoService(RankingService rankingService,
+                        @Value("${app.sessao.timeout-minutos}") int timeoutSessaoMinutos) {
+        this.rankingService = rankingService;
+        this.timeoutSessaoMinutos = timeoutSessaoMinutos;
         this.itens = criarItens();
         this.lixeiras = criarLixeiras();
+    }
+
+    @Scheduled(fixedDelayString = "PT5M")
+    public void limparSessoesInativas() {
+        Instant limite = Instant.now().minus(Duration.ofMinutes(timeoutSessaoMinutos));
+        sessoes.entrySet().removeIf(entrada -> entrada.getValue().ultimaAtividade.isBefore(limite));
     }
 
     public List<Item> getItensDisponiveis() {
@@ -39,9 +57,10 @@ public class JogoService {
         return new ArrayList<>(lixeiras);
     }
 
-    public IniciarJogoResponse iniciarJogo(String nomeJogador) {
+    public IniciarJogoResponse iniciarJogo(String nomeJogador, String dificuldadeTexto) {
+        Dificuldade dificuldade = Dificuldade.fromTexto(dificuldadeTexto);
         String sessionId = UUID.randomUUID().toString();
-        SessaoJogo sessao = new SessaoJogo(nomeJogador, gerarRodadas());
+        SessaoJogo sessao = new SessaoJogo(nomeJogador, dificuldade, gerarRodadas());
         sessoes.put(sessionId, sessao);
         return new IniciarJogoResponse(sessionId, montarRodada(sessao));
     }
@@ -60,29 +79,58 @@ public class JogoService {
         if (acertou) {
             int pontosGanhos = pontosParaTentativa(sessao.tentativas);
             sessao.pontuacao += pontosGanhos;
+            sessao.tempoTotalMs += tempoDecorridoNaRodadaMs(sessao);
 
             boolean ultimaRodada = sessao.indiceRodada == sessao.rodadas.size() - 1;
             if (ultimaRodada) {
-                String mensagemFinal = gerarMensagemFinal(sessao.nomeJogador, sessao.pontuacao);
-                sessoes.remove(sessionId);
-                return new ResultadoJogada(true, pontosGanhos, sessao.pontuacao,
-                        sessao.tentativas + 1, 0, true, mensagemFinal);
+                return finalizarJogo(sessionId, sessao, pontosGanhos, sessao.tentativas + 1);
             }
 
             return new ResultadoJogada(true, pontosGanhos, sessao.pontuacao,
-                    sessao.tentativas + 1, pontosParaTentativa(sessao.tentativas), false, null);
+                    sessao.tentativas + 1, pontosParaTentativa(sessao.tentativas), false, null, 0, null);
         }
 
         sessao.tentativas++;
         return new ResultadoJogada(false, 0, sessao.pontuacao,
-                sessao.tentativas + 1, pontosParaTentativa(sessao.tentativas), false, null);
+                sessao.tentativas + 1, pontosParaTentativa(sessao.tentativas), false, null, 0, null);
     }
 
     public Rodada avancarRodada(String sessionId) {
         SessaoJogo sessao = obterSessao(sessionId);
         sessao.indiceRodada++;
         sessao.tentativas = 0;
+        sessao.tempoInicioRodada = Instant.now();
         return montarRodada(sessao);
+    }
+
+    public TempoEsgotadoResponse tempoEsgotado(String sessionId) {
+        SessaoJogo sessao = obterSessao(sessionId);
+        sessao.tempoTotalMs += sessao.dificuldade.getTempoLimiteSegundos() * 1000L;
+
+        boolean ultimaRodada = sessao.indiceRodada == sessao.rodadas.size() - 1;
+        if (ultimaRodada) {
+            ResultadoJogada resultado = finalizarJogo(sessionId, sessao, 0, sessao.tentativas + 1);
+            return new TempoEsgotadoResponse(true, resultado.getPontuacaoTotal(), null,
+                    resultado.getMensagemFinal(), resultado.getTempoTotalMs(), resultado.getRanking());
+        }
+
+        sessao.indiceRodada++;
+        sessao.tentativas = 0;
+        sessao.tempoInicioRodada = Instant.now();
+        return new TempoEsgotadoResponse(false, sessao.pontuacao, montarRodada(sessao), null, 0, null);
+    }
+
+    private ResultadoJogada finalizarJogo(String sessionId, SessaoJogo sessao, int pontosGanhos, int tentativaAtual) {
+        String mensagemFinal = gerarMensagemFinal(sessao.nomeJogador, sessao.pontuacao);
+        List<RankingEntry> ranking = rankingService.registrarPontuacao(
+                sessao.dificuldade, sessao.nomeJogador, sessao.pontuacao, sessao.tempoTotalMs);
+        sessoes.remove(sessionId);
+        return new ResultadoJogada(true, pontosGanhos, sessao.pontuacao, tentativaAtual, 0, true,
+                mensagemFinal, sessao.tempoTotalMs, ranking);
+    }
+
+    private long tempoDecorridoNaRodadaMs(SessaoJogo sessao) {
+        return Duration.between(sessao.tempoInicioRodada, Instant.now()).toMillis();
     }
 
     private SessaoJogo obterSessao(String sessionId) {
@@ -90,6 +138,7 @@ public class JogoService {
         if (sessao == null) {
             throw new SessaoNaoEncontradaException(sessionId);
         }
+        sessao.ultimaAtividade = Instant.now();
         return sessao;
     }
 
@@ -105,7 +154,9 @@ public class JogoService {
                 rodadaInterna.lixeira,
                 rodadaInterna.opcoes,
                 sessao.tentativas + 1,
-                pontosParaTentativa(sessao.tentativas)
+                pontosParaTentativa(sessao.tentativas),
+                sessao.dificuldade.name(),
+                sessao.dificuldade.getTempoLimiteSegundos()
         );
     }
 
@@ -187,13 +238,18 @@ public class JogoService {
 
     private static class SessaoJogo {
         final String nomeJogador;
+        final Dificuldade dificuldade;
         final List<RodadaInterna> rodadas;
         int indiceRodada = 0;
         int tentativas = 0;
         int pontuacao = 0;
+        long tempoTotalMs = 0;
+        Instant tempoInicioRodada = Instant.now();
+        Instant ultimaAtividade = Instant.now();
 
-        SessaoJogo(String nomeJogador, List<RodadaInterna> rodadas) {
+        SessaoJogo(String nomeJogador, Dificuldade dificuldade, List<RodadaInterna> rodadas) {
             this.nomeJogador = nomeJogador;
+            this.dificuldade = dificuldade;
             this.rodadas = rodadas;
         }
 

@@ -392,6 +392,165 @@
             border: none;
         }
 
+        /* Seletor de dificuldade */
+        .dificuldade-section {
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 25px;
+        }
+
+        .dificuldade-label {
+            color: #1e3c3f;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .dificuldade-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dificuldade-btn {
+            flex: 1;
+            background: white;
+            border: 3px solid #d9e6d9;
+            border-radius: 18px;
+            padding: 10px 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e3c3f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dificuldade-btn span {
+            display: block;
+            font-weight: normal;
+            font-size: 11px;
+            margin-top: 3px;
+            color: #4a8b8f;
+        }
+
+        .dificuldade-btn:hover {
+            border-color: #ffb347;
+        }
+
+        .dificuldade-btn.active {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .ranking-btn {
+            background: #4a8b8f;
+            color: white;
+        }
+
+        .ranking-btn:hover {
+            background: #3d7377;
+            transform: scale(1.05);
+        }
+
+        /* Timer da rodada */
+        .timer-info {
+            font-size: 18px;
+            font-weight: bold;
+            background: #4CAF50;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .timer-info.timer-warning {
+            background: #ffb347;
+            color: #1e3c3f;
+        }
+
+        .timer-info.timer-danger {
+            background: #ff3b30;
+            animation: pulse-timer 0.6s infinite;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* Ranking */
+        .final-time-display {
+            font-size: 18px;
+            color: #4a8b8f;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ranking-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0 12px;
+            flex-wrap: wrap;
+        }
+
+        .ranking-tab-btn {
+            background: #d9e6d9;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e3c3f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ranking-tab-btn.active {
+            background: #2d5a5e;
+            color: white;
+        }
+
+        .ranking-table-wrap {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .ranking-table th, .ranking-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #d9e6d9;
+            color: #1e3c3f;
+        }
+
+        .ranking-table th {
+            background: #f0f7e6;
+            position: sticky;
+            top: 0;
+        }
+
+        .ranking-table tr.ranking-destaque {
+            background: #fff3d6;
+            font-weight: bold;
+        }
+
+        .ranking-vazio {
+            color: #4a8b8f;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-container.ranking-modal-container {
+            height: auto;
+            max-height: 85%;
+            padding: 30px 20px 20px;
+            overflow-y: auto;
+        }
+
     </style>
 </head>
 
@@ -402,10 +561,29 @@
     <!-- Menu Inicial -->
     <div id="startMenu" class="start-menu">
         <h1>♻️ Jogo de Reciclagem</h1>
-        <input type="text" id="playerName" class="name-input" placeholder="Digite seu nome...">
+        <input type="text" id="playerName" class="name-input" placeholder="Digite seu nome..." maxlength="20">
+
+        <div class="dificuldade-section">
+            <div class="dificuldade-label">Escolha a dificuldade:</div>
+            <div class="dificuldade-buttons">
+                <button class="dificuldade-btn active" data-dificuldade="FACIL" onclick="selecionarDificuldade('FACIL', this)">
+                    🟢 Fácil<span>30s por rodada</span>
+                </button>
+                <button class="dificuldade-btn" data-dificuldade="MEDIO" onclick="selecionarDificuldade('MEDIO', this)">
+                    🟠 Médio<span>15s por rodada</span>
+                </button>
+                <button class="dificuldade-btn" data-dificuldade="DIFICIL" onclick="selecionarDificuldade('DIFICIL', this)">
+                    🔴 Difícil<span>7s por rodada</span>
+                </button>
+            </div>
+        </div>
+
         <div class="menu-buttons">
             <button class="menu-btn play-btn" onclick="comecarJogo()">
                 🎮 JOGAR
+            </button>
+            <button class="menu-btn ranking-btn" onclick="abrirRanking()">
+                🏆 RANKING
             </button>
             <button class="menu-btn tutorial-btn" onclick="abrirTutorial()">
                 📖 TUTORIAL
@@ -423,6 +601,7 @@
         <div class="header">
             <div class="round-info" id="roundDisplay">Rodada 1/10</div>
             <div class="score-info" id="scoreDisplay">0 Pontos</div>
+            <div class="timer-info" id="timerDisplay">⏱️ 30s</div>
             <div class="attempts-info" id="attemptsDisplay">1ª tentativa: 10 pontos</div>
         </div>
 
@@ -463,12 +642,17 @@
             <h2> FIM DE JOGO! </h2>
 
             <p id="finalScoreDisplay" style="font-size: 60px; font-weight: bold; color: #ff6f61; margin: 10px 0;">0</p>
-            
+
+            <p id="finalTimeDisplay" class="final-time-display"></p>
+
             <p id="finalMessage" class="final-message"></p>
 
             <button class="reset-btn" onclick="voltarAoMenu()">
                 🔄 JOGAR NOVAMENTE
             </button>
+
+            <div class="ranking-tabs" id="finalRankingTabs"></div>
+            <div class="ranking-table-wrap" id="finalRankingTable"></div>
 
         </div>
 
@@ -484,14 +668,33 @@
     </div>
 </div>
 
+<!-- Modal de Ranking -->
+<div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
+    <div class="modal-container ranking-modal-container">
+        <span class="modal-close" onclick="fecharRanking()">&times;</span>
+        <h2 style="color:#1e3c3f;text-align:center;">🏆 Ranking</h2>
+        <div class="ranking-tabs" id="rankingModalTabs"></div>
+        <div class="ranking-table-wrap" id="rankingModalTable"></div>
+    </div>
+</div>
+
 <script>
 
     let sessionId = null;
     let pontuacaoAtual = 0;
+    let nomeJogadorAtual = '';
+    let dificuldadeSelecionada = 'FACIL';
+    let dificuldadeAtual = 'FACIL';
+    let tempoLimiteAtual = 0;
+    let jogadaBloqueada = false;
+    let timerInterval = null;
+    let timerDeadline = null;
+    let rankingCacheAtual = null;
 
     const roundDisplay=document.getElementById('roundDisplay');
     const scoreDisplay=document.getElementById('scoreDisplay');
     const attemptsDisplay=document.getElementById('attemptsDisplay');
+    const timerDisplay=document.getElementById('timerDisplay');
 
     const lixeiraIcon=document.getElementById('lixeiraIcon');
 
@@ -518,7 +721,7 @@
             const response = await fetch('/api/jogo/iniciar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nomeJogador: nome })
+                body: JSON.stringify({ nomeJogador: nome, dificuldade: dificuldadeSelecionada })
             });
 
             if (!response.ok) {
@@ -528,6 +731,8 @@
             const dados = await response.json();
             sessionId = dados.sessionId;
             pontuacaoAtual = 0;
+            nomeJogadorAtual = nome;
+            dificuldadeAtual = dificuldadeSelecionada;
 
             document.getElementById('startMenu').classList.add('hidden');
             document.getElementById('gameContent').classList.remove('hidden');
@@ -544,8 +749,11 @@
 
     function exibirRodada(rodada){
 
+        jogadaBloqueada = false;
+
         roundDisplay.textContent=`Rodada ${rodada.numeroRodada}/${rodada.totalRodadas}`;
         atualizarTentativas(rodada.tentativaAtual, rodada.pontosProximaTentativa);
+        iniciarTimer(rodada.tempoLimiteSegundos);
 
         lixeiraIcon.innerHTML=`<img src="${rodada.lixeira.imagemUrl}" alt="${rodada.lixeira.nome}">`;
 
@@ -585,6 +793,8 @@
 
     lixeiraCard.addEventListener('drop',e=>{
 
+        if (jogadaBloqueada) return;
+
         const id=e.dataTransfer.getData('id');
 
         processarJogada(parseInt(id));
@@ -592,7 +802,7 @@
     });
 
     async function processarJogada(itemId) {
-        if (!sessionId) return;
+        if (!sessionId || jogadaBloqueada) return;
 
         try {
             const response = await fetch(`/api/jogo/${sessionId}/jogada`, {
@@ -610,10 +820,12 @@
             scoreDisplay.textContent = `${pontuacaoAtual} Pontos`;
 
             if (resultado.acertou) {
+                jogadaBloqueada = true;
+                pararTimer();
                 messageArea.innerHTML = "🎉 ACERTOU!";
 
                 if (resultado.jogoFinalizado) {
-                    finalizarJogo(resultado.mensagemFinal);
+                    finalizarJogo(resultado.mensagemFinal, resultado.tempoTotalMs);
                 } else {
                     nextRoundBtn.style.display = "block";
                 }
@@ -623,6 +835,69 @@
             }
         } catch (error) {
             console.error("Erro ao processar jogada:", error);
+            alert("Erro ao conectar com o servidor.");
+        }
+    }
+
+    function iniciarTimer(segundos) {
+        pararTimer();
+        tempoLimiteAtual = segundos;
+        timerDeadline = Date.now() + segundos * 1000;
+        atualizarTimerDisplay();
+        timerInterval = setInterval(atualizarTimerDisplay, 200);
+    }
+
+    function pararTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
+    function atualizarTimerDisplay() {
+        const restanteMs = timerDeadline - Date.now();
+        const restanteSeg = Math.max(0, Math.ceil(restanteMs / 1000));
+
+        timerDisplay.textContent = `⏱️ ${restanteSeg}s`;
+        timerDisplay.classList.remove('timer-warning', 'timer-danger');
+
+        if (restanteSeg <= 3) {
+            timerDisplay.classList.add('timer-danger');
+        } else if (restanteSeg <= Math.ceil(tempoLimiteAtual / 2)) {
+            timerDisplay.classList.add('timer-warning');
+        }
+
+        if (restanteMs <= 0 && !jogadaBloqueada) {
+            jogadaBloqueada = true;
+            pararTimer();
+            aoTempoEsgotar();
+        }
+    }
+
+    async function aoTempoEsgotar() {
+        if (!sessionId) return;
+
+        messageArea.innerHTML = "⏰ TEMPO ESGOTADO!";
+        nextRoundBtn.style.display = "none";
+
+        try {
+            const response = await fetch(`/api/jogo/${sessionId}/tempo-esgotado`, { method: 'POST' });
+
+            if (!response.ok) {
+                throw new Error('Falha ao registrar tempo esgotado');
+            }
+
+            const dados = await response.json();
+            pontuacaoAtual = dados.pontuacaoTotal;
+            scoreDisplay.textContent = `${pontuacaoAtual} Pontos`;
+
+            if (dados.jogoFinalizado) {
+                finalizarJogo(dados.mensagemFinal, dados.tempoTotalMs);
+            } else {
+                setTimeout(() => exibirRodada(dados.proximaRodada), 1200);
+            }
+        } catch (error) {
+            console.error("Erro ao registrar tempo esgotado:", error);
             alert("Erro ao conectar com o servidor.");
         }
     }
@@ -649,12 +924,15 @@
 
     function voltarAoMenu() {
         sessionId = null;
+        pararTimer();
         document.getElementById('gameContent').classList.add('hidden');
         document.getElementById('startMenu').classList.remove('hidden');
         document.getElementById('playerName').focus();
     }
 
-    function finalizarJogo(mensagemFinal){
+    async function finalizarJogo(mensagemFinal, tempoTotalMs){
+
+        pararTimer();
 
         document.getElementById('gameArea').classList.add('hidden');
 
@@ -662,8 +940,119 @@
 
         finalScoreDisplay.textContent=pontuacaoAtual + " Pontos";
 
+        document.getElementById('finalTimeDisplay').textContent = `⏱️ Tempo total: ${(tempoTotalMs / 1000).toFixed(1)}s`;
+
         document.getElementById('finalMessage').textContent = mensagemFinal;
 
+        const tabsEl = document.getElementById('finalRankingTabs');
+        const tabelaEl = document.getElementById('finalRankingTable');
+        tabelaEl.innerHTML = '<p class="ranking-vazio">Carregando ranking...</p>';
+
+        try {
+            rankingCacheAtual = await buscarTodosRankings();
+            criarTabsRanking(tabsEl, tabelaEl, dificuldadeAtual, {
+                nome: nomeJogadorAtual,
+                pontuacao: pontuacaoAtual,
+                tempoTotalMs: tempoTotalMs,
+                dificuldade: dificuldadeAtual
+            });
+        } catch (error) {
+            console.error("Erro ao carregar ranking:", error);
+            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível carregar o ranking.</p>';
+        }
+    }
+
+    function selecionarDificuldade(dificuldade, botaoEl) {
+        dificuldadeSelecionada = dificuldade;
+        document.querySelectorAll('.dificuldade-btn').forEach(b => b.classList.remove('active'));
+        botaoEl.classList.add('active');
+    }
+
+    function escapeHtml(texto) {
+        const div = document.createElement('div');
+        div.textContent = texto;
+        return div.innerHTML;
+    }
+
+    async function buscarTodosRankings() {
+        const response = await fetch('/api/ranking');
+        if (!response.ok) {
+            throw new Error('Falha ao buscar ranking');
+        }
+        return response.json();
+    }
+
+    const NOMES_DIFICULDADE = { FACIL: '🟢 Fácil', MEDIO: '🟠 Médio', DIFICIL: '🔴 Difícil' };
+
+    function criarTabsRanking(containerTabs, containerTabela, dificuldadeInicial, destaque) {
+        containerTabs.innerHTML = '';
+
+        Object.keys(NOMES_DIFICULDADE).forEach(dificuldade => {
+            const btn = document.createElement('button');
+            btn.className = 'ranking-tab-btn' + (dificuldade === dificuldadeInicial ? ' active' : '');
+            btn.textContent = NOMES_DIFICULDADE[dificuldade];
+            btn.onclick = () => {
+                containerTabs.querySelectorAll('.ranking-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderizarTabelaRanking(containerTabela, rankingCacheAtual[dificuldade],
+                    destaque && destaque.dificuldade === dificuldade ? destaque : null);
+            };
+            containerTabs.appendChild(btn);
+        });
+
+        renderizarTabelaRanking(containerTabela, rankingCacheAtual[dificuldadeInicial],
+            destaque && destaque.dificuldade === dificuldadeInicial ? destaque : null);
+    }
+
+    function renderizarTabelaRanking(container, entradas, destaque) {
+        if (!entradas || entradas.length === 0) {
+            container.innerHTML = '<p class="ranking-vazio">Nenhuma pontuação registrada ainda.</p>';
+            return;
+        }
+
+        let html = '<table class="ranking-table"><thead><tr><th>#</th><th>Nome</th><th>Pontos</th><th>Tempo</th></tr></thead><tbody>';
+
+        entradas.forEach((entrada, index) => {
+            const destacar = destaque
+                && entrada.nomeJogador === destaque.nome
+                && entrada.pontuacao === destaque.pontuacao
+                && entrada.tempoTotalMs === destaque.tempoTotalMs;
+
+            html += `<tr class="${destacar ? 'ranking-destaque' : ''}">
+                <td>${index + 1}º</td>
+                <td>${escapeHtml(entrada.nomeJogador)}</td>
+                <td>${entrada.pontuacao}</td>
+                <td>${(entrada.tempoTotalMs / 1000).toFixed(1)}s</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    async function abrirRanking() {
+        document.getElementById('rankingModal').style.display = 'flex';
+        const tabsEl = document.getElementById('rankingModalTabs');
+        const tabelaEl = document.getElementById('rankingModalTable');
+        tabelaEl.innerHTML = '<p class="ranking-vazio">Carregando ranking...</p>';
+
+        try {
+            rankingCacheAtual = await buscarTodosRankings();
+            criarTabsRanking(tabsEl, tabelaEl, dificuldadeSelecionada, null);
+        } catch (error) {
+            console.error("Erro ao carregar ranking:", error);
+            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível carregar o ranking.</p>';
+        }
+    }
+
+    function fecharRanking() {
+        document.getElementById('rankingModal').style.display = 'none';
+    }
+
+    function fecharRankingFora(event) {
+        if (event.target.id === 'rankingModal') {
+            fecharRanking();
+        }
     }
 
     function abrirTutorial() {

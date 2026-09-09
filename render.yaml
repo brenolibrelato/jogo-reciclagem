@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: jogo-reciclagem
+    runtime: java
+    plan: free
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/jogo-reciclagem-1.0.0.jar
+    envVars:
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://jogo-reciclagem.onrender.com

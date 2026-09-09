@@ -1,5 +1,9 @@
 package com.reciclagem.jogo.dto;
 
+import com.reciclagem.jogo.model.RankingEntry;
+
+import java.util.List;
+
 public class ResultadoJogada {
     private final boolean acertou;
     private final int pontosGanhos;
@@ -8,9 +12,12 @@ public class ResultadoJogada {
     private final int pontosProximaTentativa;
     private final boolean jogoFinalizado;
     private final String mensagemFinal;
+    private final long tempoTotalMs;
+    private final List<RankingEntry> ranking;
 
     public ResultadoJogada(boolean acertou, int pontosGanhos, int pontuacaoTotal, int tentativaAtual,
-                            int pontosProximaTentativa, boolean jogoFinalizado, String mensagemFinal) {
+                            int pontosProximaTentativa, boolean jogoFinalizado, String mensagemFinal,
+                            long tempoTotalMs, List<RankingEntry> ranking) {
         this.acertou = acertou;
         this.pontosGanhos = pontosGanhos;
         this.pontuacaoTotal = pontuacaoTotal;
@@ -18,6 +25,8 @@ public class ResultadoJogada {
         this.pontosProximaTentativa = pontosProximaTentativa;
         this.jogoFinalizado = jogoFinalizado;
         this.mensagemFinal = mensagemFinal;
+        this.tempoTotalMs = tempoTotalMs;
+        this.ranking = ranking;
     }
 
     public boolean isAcertou() {
@@ -46,5 +55,13 @@ public class ResultadoJogada {
 
     public String getMensagemFinal() {
         return mensagemFinal;
+    }
+
+    public long getTempoTotalMs() {
+        return tempoTotalMs;
+    }
+
+    public List<RankingEntry> getRanking() {
+        return ranking;
     }
 }
