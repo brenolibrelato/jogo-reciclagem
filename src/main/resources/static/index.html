@@ -551,12 +551,91 @@
             overflow-y: auto;
         }
 
+        /* Botão de som */
+        .sound-btn {
+            position:absolute;
+            top:15px;
+            left:15px;
+            width:42px;
+            height:42px;
+            border-radius:50%;
+            border:none;
+            background:#4a8b8f;
+            color:white;
+            font-size:20px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.25);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:transform 0.2s, background 0.3s;
+            z-index:10;
+        }
+
+        .sound-btn:hover{
+            transform:scale(1.1);
+            background:#5a9ba0;
+        }
+
+        .sound-btn:active{
+            transform:scale(0.9);
+        }
+
+        /* Feedback tátil em botões */
+        .menu-btn:active,
+        .dificuldade-btn:active,
+        .next-round-btn:active,
+        .reset-btn:active,
+        .manual-btn:active,
+        .ranking-tab-btn:active,
+        .modal-close:active{
+            transform:scale(0.93);
+        }
+
+        .item-card:active{
+            transform:scale(0.96);
+        }
+
+        /* Animações de acerto/erro */
+        .lixeira-shake{
+            animation:lixeira-shake-anim 0.4s;
+        }
+
+        @keyframes lixeira-shake-anim{
+            0%,100%{ transform:translateX(0); }
+            20%{ transform:translateX(-12px) rotate(-3deg); }
+            40%{ transform:translateX(10px) rotate(3deg); }
+            60%{ transform:translateX(-8px) rotate(-2deg); }
+            80%{ transform:translateX(8px) rotate(2deg); }
+        }
+
+        .lixeira-success{
+            animation:lixeira-success-anim 0.5s;
+        }
+
+        @keyframes lixeira-success-anim{
+            0%{ transform:scale(1); }
+            35%{ transform:scale(1.15); box-shadow:0 0 0 14px rgba(76,175,80,0.28); }
+            100%{ transform:scale(1); box-shadow:none; }
+        }
+
+        .message-pop{
+            animation:message-pop-anim 0.3s;
+        }
+
+        @keyframes message-pop-anim{
+            0%{ transform:scale(0.85); opacity:0.4; }
+            100%{ transform:scale(1); opacity:1; }
+        }
+
     </style>
 </head>
 
 <body>
 
 <div class="game-container">
+
+    <button class="sound-btn" id="soundToggleBtn" onclick="alternarSom()" title="Ativar/desativar som">🔊</button>
 
     <!-- Menu Inicial -->
     <div id="startMenu" class="start-menu">
@@ -690,6 +769,105 @@
     let timerInterval = null;
     let timerDeadline = null;
     let rankingCacheAtual = null;
+    let ultimoSegundoTick = null;
+
+    // ===== Efeitos sonoros (arquivos em /sounds) =====
+
+    let soundEnabled = localStorage.getItem('jogoReciclagem_som') !== 'off';
+    let tempoPassandoTocando = false;
+
+    const ARQUIVOS_SOM = {
+        clique: 'sounds/clique.mp3',
+        acerto: 'sounds/acerto.mp3',
+        erro: 'sounds/erro.mp3',
+        comecoJogo: 'sounds/comeco-jogo.mp3',
+        tempoPassando: 'sounds/tempo-passando.mp3'
+    };
+
+    const audioElementos = {};
+    Object.keys(ARQUIVOS_SOM).forEach(chave => {
+        const audio = new Audio(ARQUIVOS_SOM[chave]);
+        audio.preload = 'auto';
+        audioElementos[chave] = audio;
+    });
+
+    function tocarSom(chave, { volume = 0.8 } = {}) {
+        if (!soundEnabled) return;
+        const original = audioElementos[chave];
+        if (!original) return;
+        try {
+            const instancia = original.cloneNode();
+            instancia.volume = volume;
+            instancia.play().catch(() => {});
+        } catch (e) {
+            console.warn('Não foi possível tocar som:', e);
+        }
+    }
+
+    function somClick() {
+        tocarSom('clique', { volume: 0.6 });
+    }
+
+    function somAcerto() {
+        tocarSom('acerto', { volume: 0.8 });
+    }
+
+    function somErro() {
+        tocarSom('erro', { volume: 0.7 });
+    }
+
+    function somTempoEsgotado() {
+        tocarSom('erro', { volume: 0.7 });
+    }
+
+    function somComecoJogo() {
+        tocarSom('comecoJogo', { volume: 0.7 });
+    }
+
+    function somFimDeJogo() {
+        tocarSom('acerto', { volume: 0.9 });
+    }
+
+    function iniciarSomTempoPassando() {
+        if (!soundEnabled || tempoPassandoTocando) return;
+        const audio = audioElementos.tempoPassando;
+        if (!audio) return;
+        tempoPassandoTocando = true;
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    }
+
+    function pararSomTempoPassando() {
+        const audio = audioElementos.tempoPassando;
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.loop = false;
+        }
+        tempoPassandoTocando = false;
+    }
+
+    function alternarSom() {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        if (!soundEnabled) {
+            pararSomTempoPassando();
+        } else {
+            somClick();
+        }
+    }
+
+    function tocarAnimacao(elemento, classe) {
+        elemento.classList.remove(classe);
+        void elemento.offsetWidth; // reinicia a animação mesmo se já estava ativa
+        elemento.classList.add(classe);
+        elemento.addEventListener('animationend', () => elemento.classList.remove(classe), { once: true });
+    }
+
+    // ===== Fim dos efeitos sonoros =====
 
     const roundDisplay=document.getElementById('roundDisplay');
     const scoreDisplay=document.getElementById('scoreDisplay');
@@ -710,6 +888,8 @@
     async function comecarJogo() {
         const inputNome = document.getElementById('playerName');
         const nome = inputNome.value.trim();
+
+        somClick();
 
         if (!nome) {
             alert("Por favor, digite seu nome para começar!");
@@ -740,6 +920,7 @@
             finalScoreArea.classList.add('hidden');
             scoreDisplay.textContent = "0 Pontos";
 
+            somComecoJogo();
             exibirRodada(dados.rodada);
         } catch (error) {
             console.error("Erro ao iniciar jogo:", error);
@@ -750,6 +931,7 @@
     function exibirRodada(rodada){
 
         jogadaBloqueada = false;
+        pararSomTempoPassando();
 
         roundDisplay.textContent=`Rodada ${rodada.numeroRodada}/${rodada.totalRodadas}`;
         atualizarTentativas(rodada.tentativaAtual, rodada.pontosProximaTentativa);
@@ -822,7 +1004,10 @@
             if (resultado.acertou) {
                 jogadaBloqueada = true;
                 pararTimer();
+                somAcerto();
+                tocarAnimacao(lixeiraCard, 'lixeira-success');
                 messageArea.innerHTML = "🎉 ACERTOU!";
+                tocarAnimacao(messageArea, 'message-pop');
 
                 if (resultado.jogoFinalizado) {
                     finalizarJogo(resultado.mensagemFinal, resultado.tempoTotalMs);
@@ -830,8 +1015,11 @@
                     nextRoundBtn.style.display = "block";
                 }
             } else {
+                somErro();
+                tocarAnimacao(lixeiraCard, 'lixeira-shake');
                 atualizarTentativas(resultado.tentativaAtual, resultado.pontosProximaTentativa);
                 messageArea.innerHTML = "❌ ERROU!";
+                tocarAnimacao(messageArea, 'message-pop');
             }
         } catch (error) {
             console.error("Erro ao processar jogada:", error);
@@ -852,6 +1040,7 @@
             clearInterval(timerInterval);
             timerInterval = null;
         }
+        pararSomTempoPassando();
     }
 
     function atualizarTimerDisplay() {
@@ -863,6 +1052,9 @@
 
         if (restanteSeg <= 3) {
             timerDisplay.classList.add('timer-danger');
+            if (restanteSeg > 0) {
+                iniciarSomTempoPassando();
+            }
         } else if (restanteSeg <= Math.ceil(tempoLimiteAtual / 2)) {
             timerDisplay.classList.add('timer-warning');
         }
@@ -877,7 +1069,10 @@
     async function aoTempoEsgotar() {
         if (!sessionId) return;
 
+        somTempoEsgotado();
+        tocarAnimacao(lixeiraCard, 'lixeira-shake');
         messageArea.innerHTML = "⏰ TEMPO ESGOTADO!";
+        tocarAnimacao(messageArea, 'message-pop');
         nextRoundBtn.style.display = "none";
 
         try {
@@ -905,6 +1100,7 @@
     async function proximaRodada(){
         if (!sessionId) return;
 
+        somClick();
         nextRoundBtn.style.display="none";
 
         try {
@@ -923,6 +1119,7 @@
     }
 
     function voltarAoMenu() {
+        somClick();
         sessionId = null;
         pararTimer();
         document.getElementById('gameContent').classList.add('hidden');
@@ -933,6 +1130,7 @@
     async function finalizarJogo(mensagemFinal, tempoTotalMs){
 
         pararTimer();
+        somFimDeJogo();
 
         document.getElementById('gameArea').classList.add('hidden');
 
@@ -963,6 +1161,7 @@
     }
 
     function selecionarDificuldade(dificuldade, botaoEl) {
+        somClick();
         dificuldadeSelecionada = dificuldade;
         document.querySelectorAll('.dificuldade-btn').forEach(b => b.classList.remove('active'));
         botaoEl.classList.add('active');
@@ -1031,6 +1230,7 @@
     }
 
     async function abrirRanking() {
+        somClick();
         document.getElementById('rankingModal').style.display = 'flex';
         const tabsEl = document.getElementById('rankingModalTabs');
         const tabelaEl = document.getElementById('rankingModalTable');
@@ -1046,6 +1246,7 @@
     }
 
     function fecharRanking() {
+        somClick();
         document.getElementById('rankingModal').style.display = 'none';
     }
 
@@ -1056,10 +1257,12 @@
     }
 
     function abrirTutorial() {
+        somClick();
         document.getElementById('tutorialModal').style.display = 'flex';
     }
 
     function fecharTutorial() {
+        somClick();
         document.getElementById('tutorialModal').style.display = 'none';
     }
 
@@ -1070,6 +1273,8 @@
     }
 
     window.onload = function() {
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+
         document.getElementById('playerName').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 comecarJogo();
