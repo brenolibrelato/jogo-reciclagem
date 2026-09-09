@@ -193,18 +193,33 @@
         }
 
         .message-area{
-            background:#ffb347;
-            border-radius:25px;
-            padding:12px;
+            background:#fff3e0;
+            border-left:6px solid #ffb347;
+            border-radius:14px;
+            padding:12px 18px;
             margin:12px 0;
             text-align:center;
             font-size:20px;
             font-weight:bold;
-            color:#1e3c3f;
+            color:#8a5a00;
             min-height:55px;
             display:flex;
             align-items:center;
             justify-content:center;
+            cursor:default;
+            box-shadow:none;
+        }
+
+        .message-area.message-sucesso{
+            background:#e8f5e9;
+            border-left-color:#4CAF50;
+            color:#1b5e20;
+        }
+
+        .message-area.message-erro{
+            background:#ffebee;
+            border-left-color:#e53935;
+            color:#b71c1c;
         }
 
         .next-round-btn{
@@ -960,6 +975,7 @@
 
         });
 
+        messageArea.classList.remove('message-sucesso', 'message-erro');
         messageArea.innerHTML="Arraste um item para a lixeira";
         nextRoundBtn.style.display="none";
 
@@ -1006,6 +1022,8 @@
                 pararTimer();
                 somAcerto();
                 tocarAnimacao(lixeiraCard, 'lixeira-success');
+                messageArea.classList.remove('message-erro');
+                messageArea.classList.add('message-sucesso');
                 messageArea.innerHTML = "🎉 ACERTOU!";
                 tocarAnimacao(messageArea, 'message-pop');
 
@@ -1018,6 +1036,8 @@
                 somErro();
                 tocarAnimacao(lixeiraCard, 'lixeira-shake');
                 atualizarTentativas(resultado.tentativaAtual, resultado.pontosProximaTentativa);
+                messageArea.classList.remove('message-sucesso');
+                messageArea.classList.add('message-erro');
                 messageArea.innerHTML = "❌ ERROU!";
                 tocarAnimacao(messageArea, 'message-pop');
             }
@@ -1071,6 +1091,8 @@
 
         somTempoEsgotado();
         tocarAnimacao(lixeiraCard, 'lixeira-shake');
+        messageArea.classList.remove('message-sucesso');
+        messageArea.classList.add('message-erro');
         messageArea.innerHTML = "⏰ TEMPO ESGOTADO!";
         tocarAnimacao(messageArea, 'message-pop');
         nextRoundBtn.style.display = "none";
