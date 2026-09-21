@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌧️♻️ Cachoeira de Lixo</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        }
+
+        body{
+            background:url('images/backgroud/fundo-jogo.jpg');
+            background-size:cover;
+            background-position:center;
+            background-repeat:no-repeat;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:10px;
+        }
+
+        .game-container{
+            background:#f0f7e6;
+            border-radius:35px;
+            padding:18px 25px;
+            box-shadow:0 20px 40px rgba(0,0,0,0.3);
+            max-width:560px;
+            width:100%;
+            max-height:calc(100vh - 20px);
+            overflow:auto;
+            position:relative;
+        }
+
+        .hidden{
+            display:none !important;
+        }
+
+        /* Botoes flutuantes (som / voltar) */
+        .icon-btn{
+            position:absolute;
+            top:15px;
+            width:42px;
+            height:42px;
+            border-radius:50%;
+            border:none;
+            background:#4a8b8f;
+            color:white;
+            font-size:20px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.25);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:transform 0.2s, background 0.3s;
+            z-index:10;
+            text-decoration:none;
+        }
+
+        .icon-btn:hover{
+            transform:scale(1.1);
+        }
+
+        .icon-btn:active{
+            transform:scale(0.9);
+        }
+
+        #soundToggleBtn{ left:15px; }
+
+        .home-btn{
+            left:65px;
+            background:#ff6f61;
+        }
+
+        .home-btn:hover{
+            background:#ff8a7f;
+        }
+
+        /* ===== Tela de inicio ===== */
+        .tela-inicio{
+            text-align:center;
+            padding:50px 15px 20px;
+        }
+
+        .tela-inicio h1{
+            color:#1e3c3f;
+            font-size:32px;
+            margin-bottom:14px;
+            text-shadow:2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tela-inicio p.subtitulo{
+            color:#2d5a5e;
+            font-size:15px;
+            margin-bottom:20px;
+            line-height:1.5;
+        }
+
+        .instrucoes-lista{
+            list-style:none;
+            background:white;
+            border-radius:20px;
+            padding:18px 20px;
+            margin-bottom:24px;
+            text-align:left;
+            box-shadow:0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .instrucoes-lista li{
+            color:#1e3c3f;
+            font-size:14px;
+            padding:6px 0;
+            line-height:1.4;
+        }
+
+        .btn-primario{
+            background:#4CAF50;
+            color:white;
+            border:none;
+            padding:16px 36px;
+            font-size:20px;
+            font-weight:bold;
+            border-radius:35px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.2);
+            transition:transform 0.2s, background 0.2s;
+        }
+
+        .btn-primario:hover:not(:disabled){
+            background:#45a049;
+            transform:scale(1.05);
+        }
+
+        .btn-primario:active:not(:disabled){
+            transform:scale(0.95);
+        }
+
+        .btn-primario:disabled{
+            opacity:0.6;
+            cursor:default;
+        }
+
+        /* ===== HUD ===== */
+        .hud{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+            background:#2d5a5e;
+            padding:10px 16px;
+            border-radius:26px;
+            color:white;
+            margin:48px 0 14px;
+        }
+
+        .hud-pill{
+            font-size:14px;
+            font-weight:bold;
+            padding:7px 14px;
+            border-radius:20px;
+            color:white;
+            white-space:nowrap;
+        }
+
+        .hud-pontuacao{ background:#ff6f61; }
+        .hud-categoria{ background:#4a8b8f; }
+        .hud-tempo{ background:#4CAF50; transition:background 0.3s; }
+
+        .hud-tempo.timer-danger{
+            background:#ff3b30;
+            animation:pulse-timer 0.6s infinite;
+        }
+
+        @keyframes pulse-timer{
+            0%,100%{ transform:scale(1); }
+            50%{ transform:scale(1.08); }
+        }
+
+        .btn-pausar{
+            border:none;
+            background:#ffb347;
+            color:#1e3c3f;
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            font-size:16px;
+            cursor:pointer;
+            box-shadow:0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-pausar:active{
+            transform:scale(0.9);
+        }
+
+        /* ===== Area de jogo ===== */
+        .area-jogo{
+            position:relative;
+            width:100%;
+            height:62vh;
+            max-height:520px;
+            min-height:360px;
+            background:linear-gradient(#cfe8f3, #eaf7ea);
+            border-radius:24px;
+            overflow:hidden;
+            border:3px solid #4a8b8f;
+            touch-action:none;
+            cursor:pointer;
+        }
+
+        .area-jogo.tempo-critico{
+            animation:fundo-critico-pulse 0.7s infinite;
+        }
+
+        @keyframes fundo-critico-pulse{
+            0%,100%{ box-shadow:inset 0 0 0 6px rgba(255,205,210,0); }
+            50%{ box-shadow:inset 0 0 0 6px rgba(255,59,48,0.55); }
+        }
+
+        .residuo-caindo{
+            position:absolute;
+            width:54px;
+            height:54px;
+            background:white;
+            border-radius:14px;
+            border:2px solid #4a8b8f;
+            box-shadow:0 4px 10px rgba(0,0,0,0.15);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .residuo-caindo img{
+            width:42px;
+            height:42px;
+            object-fit:contain;
+            pointer-events:none;
+            -webkit-user-drag:none;
+        }
+
+        #lixeiraJogador{
+            position:absolute;
+            bottom:8px;
+            left:50%;
+            width:110px;
+            height:70px;
+            transform:translateX(-50%);
+            border-radius:14px 14px 22px 22px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            color:white;
+            font-weight:bold;
+            text-shadow:0 1px 3px rgba(0,0,0,0.4);
+            box-shadow:0 6px 14px rgba(0,0,0,0.3);
+            background:#4a8b8f;
+            transition:background-color 0.4s;
+        }
+
+        #lixeiraJogador .lixeira-jogador-icone{
+            font-size:20px;
+            line-height:1;
+        }
+
+        #lixeiraJogador .lixeira-jogador-nome{
+            font-size:12px;
+            margin-top:2px;
+        }
+
+        #lixeiraJogador.lixeira-jogador-troca{
+            animation:lixeira-troca-anim 0.6s;
+        }
+
+        @keyframes lixeira-troca-anim{
+            0%{ box-shadow:0 0 0 0 rgba(255,179,71,0.9); }
+            100%{ box-shadow:0 0 0 22px rgba(255,179,71,0); }
+        }
+
+        #lixeiraJogador.lixeira-jogador-sucesso{
+            animation:lixeira-jogador-sucesso-anim 0.4s;
+        }
+
+        @keyframes lixeira-jogador-sucesso-anim{
+            0%{ transform:translateX(-50%) scale(1); }
+            40%{ transform:translateX(-50%) scale(1.18); }
+            100%{ transform:translateX(-50%) scale(1); }
+        }
+
+        #lixeiraJogador.lixeira-jogador-erro{
+            animation:lixeira-jogador-erro-anim 0.4s;
+        }
+
+        @keyframes lixeira-jogador-erro-anim{
+            0%,100%{ transform:translateX(-50%); }
+            25%{ transform:translateX(calc(-50% - 8px)); }
+            75%{ transform:translateX(calc(-50% + 8px)); }
+        }
+
+        .feedback-flutuante{
+            position:absolute;
+            font-weight:bold;
+            font-size:20px;
+            pointer-events:none;
+            animation:feedback-subir 0.8s ease-out forwards;
+            z-index:6;
+        }
+
+        .feedback-positivo{ color:#1b5e20; }
+        .feedback-negativo{ color:#b71c1c; }
+
+        @keyframes feedback-subir{
+            0%{ transform:translateY(0); opacity:1; }
+            100%{ transform:translateY(-45px); opacity:0; }
+        }
+
+        .aviso-categoria{
+            position:absolute;
+            top:14px;
+            left:50%;
+            transform:translateX(-50%) translateY(-16px);
+            background:#ffb347;
+            color:#1e3c3f;
+            padding:10px 22px;
+            border-radius:20px;
+            font-weight:bold;
+            font-size:14px;
+            box-shadow:0 8px 20px rgba(0,0,0,0.25);
+            opacity:0;
+            transition:opacity 0.3s, transform 0.3s;
+            pointer-events:none;
+            z-index:7;
+            white-space:nowrap;
+        }
+
+        .aviso-categoria.visivel{
+            opacity:1;
+            transform:translateX(-50%) translateY(0);
+        }
+
+        .overlay-pausa{
+            position:absolute;
+            inset:0;
+            background:rgba(30,60,63,0.85);
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:16px;
+            z-index:8;
+            border-radius:22px;
+        }
+
+        .overlay-pausa h2{
+            color:white;
+            font-size:26px;
+        }
+
+        /* ===== Tela final ===== */
+        .tela-fim{
+            text-align:center;
+            padding:30px 15px;
+        }
+
+        .tela-fim h2{
+            color:#1e3c3f;
+            font-size:28px;
+            margin-bottom:10px;
+        }
+
+        .pontuacao-final{
+            font-size:52px;
+            font-weight:bold;
+            color:#ff6f61;
+            margin:10px 0;
+        }
+
+        .mensagem-final{
+            font-size:18px;
+            color:#1e3c3f;
+            font-weight:bold;
+            margin-bottom:14px;
+            line-height:1.4;
+        }
+
+        .dica-final{
+            background:#e8f5e9;
+            border-left:6px solid #4CAF50;
+            border-radius:14px;
+            padding:12px 16px;
+            font-size:14px;
+            color:#1b5e20;
+            margin-bottom:22px;
+            text-align:left;
+        }
+
+        .botoes-fim{
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+            max-width:280px;
+            margin:0 auto;
+        }
+
+        .btn-secundario{
+            background:#4a8b8f;
+            color:white;
+            text-decoration:none;
+            border:none;
+            padding:14px 20px;
+            font-size:16px;
+            font-weight:bold;
+            border-radius:30px;
+            cursor:pointer;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            transition:transform 0.2s, background 0.2s;
+        }
+
+        .btn-secundario:hover{
+            background:#3d7377;
+            transform:scale(1.03);
+        }
+
+        @media (max-width:480px){
+            .tela-inicio h1{ font-size:26px; }
+            .area-jogo{ height:56vh; min-height:320px; }
+            #lixeiraJogador{ width:88px; height:60px; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+    <button class="icon-btn" id="soundToggleBtn" onclick="alternarSom()" title="Ativar/desativar som">🔊</button>
+    <a class="icon-btn home-btn" href="index.html" title="Voltar ao menu de jogos">🏠</a>
+
+    <!-- Tela inicial -->
+    <div id="telaInicio" class="tela-inicio">
+        <h1>🌧️♻️ Cachoeira de Lixo</h1>
+        <p class="subtitulo">Resíduos caem do céu! Mova a lixeira e capture só o que combina com a categoria certa.</p>
+
+        <ul class="instrucoes-lista">
+            <li>🖱️ Mova o mouse (ou arraste o dedo) para controlar a lixeira</li>
+            <li>⌨️ No computador também dá pra usar as setas ← →</li>
+            <li>✅ Capture apenas o resíduo da categoria mostrada na lixeira</li>
+            <li>⏱️ Você tem 60 segundos — a categoria da lixeira muda sozinha!</li>
+        </ul>
+
+        <button class="btn-primario" id="btnJogarInicio">🎮 JOGAR</button>
+    </div>
+
+    <!-- Tela de jogo -->
+    <div id="telaJogo" class="hidden">
+
+        <div class="hud">
+            <div class="hud-pill hud-pontuacao" id="hudPontuacao">0 pontos</div>
+            <div class="hud-pill hud-categoria" id="hudCategoria">♻️ --</div>
+            <div class="hud-pill hud-tempo" id="hudTempo">⏱️ 60s</div>
+            <button class="btn-pausar" id="btnPausar" title="Pausar">⏸️</button>
+        </div>
+
+        <div class="area-jogo" id="areaJogo">
+            <div id="lixeiraJogador">
+                <span class="lixeira-jogador-icone">♻️</span>
+                <span class="lixeira-jogador-nome">--</span>
+            </div>
+            <div class="aviso-categoria" id="avisoCategoria"></div>
+
+            <div class="overlay-pausa hidden" id="overlayPausa">
+                <h2>⏸️ Pausado</h2>
+                <button class="btn-primario" id="btnContinuar">▶️ Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela final -->
+    <div id="telaFim" class="hidden tela-fim">
+        <h2>🏁 Fim de Jogo!</h2>
+        <p class="pontuacao-final" id="pontuacaoFinal">0</p>
+        <p class="mensagem-final" id="mensagemFinal"></p>
+        <p class="dica-final" id="dicaFinal"></p>
+
+        <div class="botoes-fim">
+            <button class="btn-primario" id="btnJogarNovamente">🔄 Jogar novamente</button>
+            <a class="btn-secundario" href="index.html">🏠 Voltar ao menu</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    // ===== Dados de categorias e itens (reaproveita a API do jogo de reciclagem) =====
+
+    const CORES_CATEGORIA = {
+        azul: '#1976D2',
+        vermelho: '#e53935',
+        verde: '#4CAF50',
+        amarelo: '#ffb347',
+        marrom: '#8d6e46'
+    };
+
+    // Copia local dos mesmos dados do backend (com.reciclagem.jogo.service.JogoService),
+    // usada apenas se a API estiver indisponivel no momento do carregamento.
+    const DADOS_FALLBACK = {
+        lixeiras: [
+            { cor: 'azul', categoriaAceita: 'papel', nome: 'Papel', imagemUrl: '/images/lixeiras/Papel.jpeg' },
+            { cor: 'vermelho', categoriaAceita: 'plastico', nome: 'Plástico', imagemUrl: '/images/lixeiras/Plástico.jpeg' },
+            { cor: 'verde', categoriaAceita: 'vidro', nome: 'Vidro', imagemUrl: '/images/lixeiras/Vidro.jpeg' },
+            { cor: 'amarelo', categoriaAceita: 'metal', nome: 'Metal', imagemUrl: '/images/lixeiras/Metal.jpeg' },
+            { cor: 'marrom', categoriaAceita: 'organico', nome: 'Orgânico', imagemUrl: '/images/lixeiras/Orgânico.jpeg' }
+        ],
+        itens: [
+            { id: 1, nome: 'Garrafa PET', categoria: 'plastico', imagemUrl: '/images/lixos/Plastico/Garrafa PET.png' },
+            { id: 2, nome: 'Pote de iogurte', categoria: 'plastico', imagemUrl: '/images/lixos/Plastico/Pote de iogurte.png' },
+            { id: 3, nome: 'Sacola plástica', categoria: 'plastico', imagemUrl: '/images/lixos/Plastico/Sacola plastica.png' },
+            { id: 4, nome: 'Tampa de garrafa', categoria: 'plastico', imagemUrl: '/images/lixos/Plastico/Tampa de garrafa.png' },
+            { id: 5, nome: 'Copo descartável', categoria: 'plastico', imagemUrl: '/images/lixos/Plastico/Copo descartável.png' },
+            { id: 6, nome: 'Jornal', categoria: 'papel', imagemUrl: '/images/lixos/Papel/Jornal.png' },
+            { id: 7, nome: 'Caixa de papelão', categoria: 'papel', imagemUrl: '/images/lixos/Papel/Caixa de papelão.png' },
+            { id: 8, nome: 'Revista', categoria: 'papel', imagemUrl: '/images/lixos/Papel/Revista.png' },
+            { id: 9, nome: 'Rolo de papel higiênico', categoria: 'papel', imagemUrl: '/images/lixos/Papel/Rolo de papel higiênico.png' },
+            { id: 10, nome: 'Caixa de leite', categoria: 'papel', imagemUrl: '/images/lixos/Papel/Caixa de leite.png' },
+            { id: 11, nome: 'Lata de refrigerante', categoria: 'metal', imagemUrl: '/images/lixos/Metal/Lata de refrigerante.png' },
+            { id: 12, nome: 'Lata de atum', categoria: 'metal', imagemUrl: '/images/lixos/Metal/Lata de atum.png' },
+            { id: 13, nome: 'Papel alumínio', categoria: 'metal', imagemUrl: '/images/lixos/Metal/_Papel alumínio.png' },
+            { id: 14, nome: 'Fio de cobre', categoria: 'metal', imagemUrl: '/images/lixos/Metal/Fio de cobre.png' },
+            { id: 15, nome: 'Tampa de metal', categoria: 'metal', imagemUrl: '/images/lixos/Metal/Tampa de metal.png' },
+            { id: 16, nome: 'Garrafa de vidro', categoria: 'vidro', imagemUrl: '/images/lixos/Vidro/Garrafa de vidro.png' },
+            { id: 17, nome: 'Pote de vidro', categoria: 'vidro', imagemUrl: '/images/lixos/Vidro/Pote de vidro.png' },
+            { id: 18, nome: 'Jarra de vidro', categoria: 'vidro', imagemUrl: '/images/lixos/Vidro/Jarra de vidro.png' },
+            { id: 19, nome: 'Caco de vidro', categoria: 'vidro', imagemUrl: '/images/lixos/Vidro/Caco de vidro.png' },
+            { id: 20, nome: 'Pote de geleia', categoria: 'vidro', imagemUrl: '/images/lixos/Vidro/Pote de geleia.png' },
+            { id: 21, nome: 'Casca de banana', categoria: 'organico', imagemUrl: '/images/lixos/Organico/casca de banana.png' },
+            { id: 22, nome: 'Casca de laranja', categoria: 'organico', imagemUrl: '/images/lixos/Organico/casca de laranja.png' },
+            { id: 23, nome: 'Saquinho de chá', categoria: 'organico', imagemUrl: '/images/lixos/Organico/Saquinho de chá.png' },
+            { id: 24, nome: 'Casca de ovo', categoria: 'organico', imagemUrl: '/images/lixos/Organico/casca de ovo.png' },
+            { id: 25, nome: 'Resto de comida', categoria: 'organico', imagemUrl: '/images/lixos/Organico/resto de comida.png' }
+        ]
+    };
+
+    const DICAS_EDUCATIVAS = [
+        'Plásticos devem ser separados para reciclagem sempre que possível.',
+        'Resíduos orgânicos podem virar compostagem.',
+        'Vidros precisam ser descartados com cuidado, sem quebrar.',
+        'Papéis limpos e secos podem ser reciclados.',
+        'Metais como latinhas podem ser reaproveitados quase infinitamente.'
+    ];
+
+    async function carregarDados() {
+        try {
+            const [respItens, respLixeiras] = await Promise.all([
+                fetch('/api/itens'),
+                fetch('/api/lixeiras')
+            ]);
+
+            if (!respItens.ok || !respLixeiras.ok) {
+                throw new Error('API indisponível');
+            }
+
+            const itens = await respItens.json();
+            const lixeiras = await respLixeiras.json();
+
+            if (!itens.length || !lixeiras.length) {
+                throw new Error('API retornou dados vazios');
+            }
+
+            return { itens, lixeiras };
+        } catch (erro) {
+            console.warn('Cachoeira de Lixo: usando dados locais de reserva.', erro);
+            return DADOS_FALLBACK;
+        }
+    }
+
+    // ===== Efeitos sonoros (reaproveita os mesmos arquivos do jogo de reciclagem) =====
+
+    let soundEnabled = localStorage.getItem('jogoReciclagem_som') !== 'off';
+    let tempoPassandoTocando = false;
+
+    const ARQUIVOS_SOM = {
+        clique: 'sounds/clique.mp3',
+        acerto: 'sounds/acerto.mp3',
+        erro: 'sounds/erro.mp3',
+        comeco: 'sounds/comeco-jogo.mp3',
+        tempoPassando: 'sounds/tempo-passando.mp3'
+    };
+
+    const audioElementos = {};
+    Object.keys(ARQUIVOS_SOM).forEach(chave => {
+        const audio = new Audio(ARQUIVOS_SOM[chave]);
+        audio.preload = 'auto';
+        audioElementos[chave] = audio;
+    });
+
+    function tocarSom(chave, volume = 0.7) {
+        if (!soundEnabled) return;
+        const original = audioElementos[chave];
+        if (!original) return;
+        try {
+            const instancia = original.cloneNode();
+            instancia.volume = volume;
+            instancia.play().catch(() => {});
+        } catch (e) {
+            console.warn('Não foi possível tocar som:', e);
+        }
+    }
+
+    function somClique() { tocarSom('clique', 0.6); }
+    function somAcerto() { tocarSom('acerto', 0.8); }
+    function somErro() { tocarSom('erro', 0.7); }
+    function somComeco() { tocarSom('comeco', 0.7); }
+    function somFim() { tocarSom('acerto', 0.9); }
+
+    function iniciarSomTempoPassando() {
+        if (!soundEnabled || tempoPassandoTocando) return;
+        const audio = audioElementos.tempoPassando;
+        tempoPassandoTocando = true;
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    }
+
+    function pararSomTempoPassando() {
+        const audio = audioElementos.tempoPassando;
+        audio.pause();
+        audio.currentTime = 0;
+        audio.loop = false;
+        tempoPassandoTocando = false;
+    }
+
+    function alternarSom() {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        if (!soundEnabled) {
+            pararSomTempoPassando();
+        } else {
+            somClique();
+        }
+    }
+
+    function tocarAnimacao(elemento, classe) {
+        elemento.classList.remove(classe);
+        void elemento.offsetWidth;
+        elemento.classList.add(classe);
+        elemento.addEventListener('animationend', () => elemento.classList.remove(classe), { once: true });
+    }
+
+    // ===== Elementos da interface =====
+
+    const telaInicio = document.getElementById('telaInicio');
+    const telaJogo = document.getElementById('telaJogo');
+    const telaFim = document.getElementById('telaFim');
+
+    const btnJogarInicio = document.getElementById('btnJogarInicio');
+    const btnJogarNovamente = document.getElementById('btnJogarNovamente');
+    const btnPausar = document.getElementById('btnPausar');
+    const btnContinuar = document.getElementById('btnContinuar');
+
+    const areaJogo = document.getElementById('areaJogo');
+    const lixeiraJogadorEl = document.getElementById('lixeiraJogador');
+    const avisoCategoriaEl = document.getElementById('avisoCategoria');
+    const overlayPausaEl = document.getElementById('overlayPausa');
+
+    const hudPontuacao = document.getElementById('hudPontuacao');
+    const hudCategoria = document.getElementById('hudCategoria');
+    const hudTempo = document.getElementById('hudTempo');
+
+    const pontuacaoFinalEl = document.getElementById('pontuacaoFinal');
+    const mensagemFinalEl = document.getElementById('mensagemFinal');
+    const dicaFinalEl = document.getElementById('dicaFinal');
+
+    const LARGURA_BIN_PX = 110; // precisa bater com a largura de #lixeiraJogador no CSS
+
+    // ===== Estado do jogo =====
+
+    const estado = {
+        status: 'inicio', // inicio | jogando | pausado | fim
+        pontuacao: 0,
+        duracaoPartida: 60,
+        tempoRestante: 60,
+        categorias: [],
+        itensPool: [],
+        categoriaAtualIndex: 0,
+        itensAtivos: [],
+        binXPercent: 50,
+        velocidadeQueda: 90, // pixels por segundo
+        intervaloSpawnMs: 1300,
+        acumuladorSpawnMs: 0,
+        tempoParaTrocarCategoria: 20, // segundos
+        tempoDesdeUltimaTroca: 0,
+        tempoDesdeUltimoAumento: 0,
+        nivelDificuldade: 0,
+        teclaEsquerda: false,
+        teclaDireita: false,
+        ultimoTimestamp: null,
+        rafId: null,
+        avisoTimeoutId: null
+    };
+
+    let dadosProntos = false;
+
+    carregarDados().then(dados => {
+        estado.categorias = dados.lixeiras;
+        estado.itensPool = dados.itens;
+        dadosProntos = true;
+        btnJogarInicio.disabled = false;
+        btnJogarInicio.textContent = '🎮 JOGAR';
+    });
+
+    // ===== Funcoes principais do jogo =====
+
+    function iniciarPartida() {
+        if (!dadosProntos) return;
+
+        limparResiduosETimers();
+
+        estado.status = 'jogando';
+        estado.pontuacao = 0;
+        estado.tempoRestante = estado.duracaoPartida;
+        estado.velocidadeQueda = 90;
+        estado.intervaloSpawnMs = 1300;
+        estado.acumuladorSpawnMs = 0;
+        estado.tempoParaTrocarCategoria = 20;
+        estado.tempoDesdeUltimaTroca = 0;
+        estado.tempoDesdeUltimoAumento = 0;
+        estado.nivelDificuldade = 0;
+        estado.binXPercent = 50;
+        estado.categoriaAtualIndex = Math.floor(Math.random() * estado.categorias.length);
+
+        telaInicio.classList.add('hidden');
+        telaFim.classList.add('hidden');
+        telaJogo.classList.remove('hidden');
+        overlayPausaEl.classList.add('hidden');
+
+        renderizarBin();
+        aplicarVisualCategoria(false);
+        atualizarPontuacaoHud();
+        atualizarHudTempo();
+        somComeco();
+
+        estado.ultimoTimestamp = null;
+        estado.rafId = requestAnimationFrame(loopJogo);
+    }
+
+    function reiniciarPartida() {
+        somClique();
+        iniciarPartida();
+    }
+
+    function finalizarPartida() {
+        estado.status = 'fim';
+        limparResiduosVisuais();
+        pararSomTempoPassando();
+
+        telaJogo.classList.add('hidden');
+        telaFim.classList.remove('hidden');
+
+        pontuacaoFinalEl.textContent = estado.pontuacao;
+        mensagemFinalEl.textContent = gerarMensagemDesempenho(estado.pontuacao);
+        dicaFinalEl.textContent = '💡 ' + DICAS_EDUCATIVAS[Math.floor(Math.random() * DICAS_EDUCATIVAS.length)];
+
+        somFim();
+    }
+
+    function gerarMensagemDesempenho(pontuacao) {
+        if (pontuacao >= 150) return 'Incrível! Você separou muitos resíduos corretamente! 🏆';
+        if (pontuacao >= 90) return 'Parabéns! Você foi ótimo capturando o lixo certo! 🌟';
+        if (pontuacao >= 40) return 'Bom trabalho! Continue praticando a separação correta. 👍';
+        return 'Continue tentando! Separar o lixo corretamente ajuda o planeta. ♻️';
+    }
+
+    function limparResiduosVisuais() {
+        estado.itensAtivos.forEach(residuo => residuo.elemento.remove());
+        estado.itensAtivos = [];
+    }
+
+    function limparResiduosETimers() {
+        if (estado.rafId) {
+            cancelAnimationFrame(estado.rafId);
+            estado.rafId = null;
+        }
+        clearTimeout(estado.avisoTimeoutId);
+        pararSomTempoPassando();
+        limparResiduosVisuais();
+    }
+
+    function voltarAoMenuInicioJogo() {
+        somClique();
+        estado.status = 'inicio';
+        limparResiduosETimers();
+        telaJogo.classList.add('hidden');
+        telaFim.classList.add('hidden');
+        telaInicio.classList.remove('hidden');
+    }
+
+    function alternarPausa() {
+        if (estado.status === 'jogando') {
+            estado.status = 'pausado';
+            overlayPausaEl.classList.remove('hidden');
+            pararSomTempoPassando();
+            somClique();
+        } else if (estado.status === 'pausado') {
+            estado.status = 'jogando';
+            overlayPausaEl.classList.add('hidden');
+            estado.ultimoTimestamp = null;
+            somClique();
+        }
+    }
+
+    // ===== Loop principal (baseado em delta-time, facil de pausar) =====
+
+    function loopJogo(timestamp) {
+        if (estado.status === 'jogando') {
+            if (estado.ultimoTimestamp === null) {
+                estado.ultimoTimestamp = timestamp;
+            }
+            const dt = Math.min((timestamp - estado.ultimoTimestamp) / 1000, 0.05);
+            estado.ultimoTimestamp = timestamp;
+
+            atualizarTempo(dt);
+            atualizarMovimentoLixeira(dt);
+            atualizarSpawn(dt);
+            moverResiduos(dt);
+            atualizarTrocaCategoria(dt);
+            atualizarDificuldade(dt);
+        } else {
+            estado.ultimoTimestamp = null;
+        }
+
+        if (estado.status === 'jogando' || estado.status === 'pausado') {
+            estado.rafId = requestAnimationFrame(loopJogo);
+        }
+    }
+
+    // ===== Tempo =====
+
+    function atualizarTempo(dt) {
+        estado.tempoRestante -= dt;
+        if (estado.tempoRestante <= 0) {
+            estado.tempoRestante = 0;
+            atualizarHudTempo();
+            finalizarPartida();
+            return;
+        }
+        atualizarHudTempo();
+    }
+
+    function atualizarHudTempo() {
+        hudTempo.textContent = `⏱️ ${Math.ceil(estado.tempoRestante)}s`;
+        const critico = estado.tempoRestante <= 10 && estado.tempoRestante > 0;
+        hudTempo.classList.toggle('timer-danger', critico);
+        areaJogo.classList.toggle('tempo-critico', critico);
+        if (critico) {
+            iniciarSomTempoPassando();
+        } else {
+            pararSomTempoPassando();
+        }
+    }
+
+    // ===== Movimento da lixeira (mouse, toque e teclado) =====
+
+    function definirBinPercent(percent) {
+        const areaWidth = areaJogo.clientWidth || 1;
+        const minPercent = (LARGURA_BIN_PX / 2 / areaWidth) * 100;
+        const maxPercent = 100 - minPercent;
+        estado.binXPercent = Math.min(maxPercent, Math.max(minPercent, percent));
+        renderizarBin();
+    }
+
+    function renderizarBin() {
+        lixeiraJogadorEl.style.left = estado.binXPercent + '%';
+    }
+
+    function moverBinParaPontoX(clientX) {
+        const rect = areaJogo.getBoundingClientRect();
+        const xPx = clientX - rect.left;
+        definirBinPercent((xPx / rect.width) * 100);
+    }
+
+    areaJogo.addEventListener('mousemove', e => {
+        if (estado.status !== 'jogando') return;
+        moverBinParaPontoX(e.clientX);
+    });
+
+    areaJogo.addEventListener('touchstart', e => {
+        if (estado.status !== 'jogando') return;
+        e.preventDefault();
+        moverBinParaPontoX(e.touches[0].clientX);
+    }, { passive: false });
+
+    areaJogo.addEventListener('touchmove', e => {
+        if (estado.status !== 'jogando') return;
+        e.preventDefault();
+        moverBinParaPontoX(e.touches[0].clientX);
+    }, { passive: false });
+
+    window.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') estado.teclaEsquerda = true;
+        if (e.key === 'ArrowRight') estado.teclaDireita = true;
+        if ((e.key === ' ' || e.key === 'Escape') && (estado.status === 'jogando' || estado.status === 'pausado')) {
+            e.preventDefault();
+            alternarPausa();
+        }
+    });
+
+    window.addEventListener('keyup', e => {
+        if (e.key === 'ArrowLeft') estado.teclaEsquerda = false;
+        if (e.key === 'ArrowRight') estado.teclaDireita = false;
+    });
+
+    function atualizarMovimentoLixeira(dt) {
+        const velocidadeTecladoPercentPorSeg = 90;
+        if (estado.teclaEsquerda) definirBinPercent(estado.binXPercent - velocidadeTecladoPercentPorSeg * dt);
+        if (estado.teclaDireita) definirBinPercent(estado.binXPercent + velocidadeTecladoPercentPorSeg * dt);
+    }
+
+    // ===== Geracao e queda dos residuos =====
+
+    function atualizarSpawn(dt) {
+        estado.acumuladorSpawnMs += dt * 1000;
+        if (estado.acumuladorSpawnMs >= estado.intervaloSpawnMs) {
+            estado.acumuladorSpawnMs = 0;
+            gerarResiduoAleatorio();
+        }
+    }
+
+    function gerarResiduoAleatorio() {
+        if (!estado.itensPool.length) return;
+
+        const item = estado.itensPool[Math.floor(Math.random() * estado.itensPool.length)];
+        const largura = 54;
+        const areaWidth = areaJogo.clientWidth;
+        const x = Math.random() * Math.max(0, areaWidth - largura);
+
+        const elemento = document.createElement('div');
+        elemento.className = 'residuo-caindo';
+        elemento.style.left = x + 'px';
+        elemento.style.top = '-60px';
+        elemento.innerHTML = `<img src="${item.imagemUrl}" alt="${item.nome}">`;
+        areaJogo.appendChild(elemento);
+
+        estado.itensAtivos.push({
+            elemento,
+            x,
+            y: -60,
+            largura,
+            altura: 54,
+            categoria: (item.categoria || '').toLowerCase(),
+            resolvido: false
+        });
+    }
+
+    function moverResiduos(dt) {
+        const areaHeight = areaJogo.clientHeight;
+        const areaWidth = areaJogo.clientWidth;
+        const binCenterPx = areaWidth * (estado.binXPercent / 100);
+        const binLeftPx = binCenterPx - LARGURA_BIN_PX / 2;
+        const binRightPx = binCenterPx + LARGURA_BIN_PX / 2;
+        const binTopPx = areaHeight - 78;
+        const binBottomPx = areaHeight - 8;
+
+        for (let i = estado.itensAtivos.length - 1; i >= 0; i--) {
+            const residuo = estado.itensAtivos[i];
+            if (residuo.resolvido) continue;
+
+            residuo.y += estado.velocidadeQueda * dt;
+            residuo.elemento.style.top = residuo.y + 'px';
+
+            const dentroFaixaBin = (residuo.y + residuo.altura) >= binTopPx && residuo.y <= binBottomPx;
+            if (dentroFaixaBin && detectarColisaoHorizontal(residuo, binLeftPx, binRightPx)) {
+                resolverCaptura(residuo);
+                continue;
+            }
+
+            if (residuo.y > areaHeight) {
+                resolverQueda(residuo);
+            }
+        }
+    }
+
+    function detectarColisaoHorizontal(residuo, binLeftPx, binRightPx) {
+        return (residuo.x + residuo.largura) >= binLeftPx && residuo.x <= binRightPx;
+    }
+
+    function categoriaAtual() {
+        return estado.categorias[estado.categoriaAtualIndex];
+    }
+
+    function itemCorrespondeCategoriaAtual(residuo) {
+        const cat = categoriaAtual();
+        return !!cat && residuo.categoria === (cat.categoriaAceita || '').toLowerCase();
+    }
+
+    function resolverCaptura(residuo) {
+        residuo.resolvido = true;
+        const acertou = itemCorrespondeCategoriaAtual(residuo);
+
+        if (acertou) {
+            atualizarPontuacao(10);
+            mostrarFeedbackFlutuante('+10', 'positivo', residuo.x, residuo.y);
+            somAcerto();
+            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-sucesso');
+        } else {
+            atualizarPontuacao(-5);
+            mostrarFeedbackFlutuante('-5', 'negativo', residuo.x, residuo.y);
+            somErro();
+            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-erro');
+        }
+
+        removerResiduo(residuo);
+    }
+
+    function resolverQueda(residuo) {
+        residuo.resolvido = true;
+
+        if (itemCorrespondeCategoriaAtual(residuo)) {
+            atualizarPontuacao(-5);
+            somErro();
+            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-erro');
+        }
+        // Residuo de outra categoria: sai da tela sem penalidade.
+
+        removerResiduo(residuo);
+    }
+
+    function removerResiduo(residuo) {
+        residuo.elemento.remove();
+        const indice = estado.itensAtivos.indexOf(residuo);
+        if (indice >= 0) estado.itensAtivos.splice(indice, 1);
+    }
+
+    function mostrarFeedbackFlutuante(texto, tipo, x, y) {
+        const el = document.createElement('div');
+        el.className = 'feedback-flutuante ' + (tipo === 'positivo' ? 'feedback-positivo' : 'feedback-negativo');
+        el.textContent = texto;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        areaJogo.appendChild(el);
+        el.addEventListener('animationend', () => el.remove(), { once: true });
+    }
+
+    // ===== Pontuacao =====
+
+    function atualizarPontuacao(delta) {
+        estado.pontuacao = Math.max(0, estado.pontuacao + delta);
+        atualizarPontuacaoHud();
+    }
+
+    function atualizarPontuacaoHud() {
+        hudPontuacao.textContent = estado.pontuacao + ' pontos';
+    }
+
+    // ===== Troca de categoria da lixeira =====
+
+    function atualizarTrocaCategoria(dt) {
+        estado.tempoDesdeUltimaTroca += dt;
+        if (estado.tempoDesdeUltimaTroca < estado.tempoParaTrocarCategoria) return;
+
+        const areaHeight = areaJogo.clientHeight;
+        const algumItemProximo = estado.itensAtivos.some(r => !r.resolvido && r.y > areaHeight - 140);
+        if (algumItemProximo && estado.tempoDesdeUltimaTroca < estado.tempoParaTrocarCategoria + 1) {
+            return; // evita trocar bem no instante da colisao, espera ate 1s a mais
+        }
+
+        trocarCategoriaLixeira();
+    }
+
+    function trocarCategoriaLixeira() {
+        estado.tempoDesdeUltimaTroca = 0;
+
+        if (estado.categorias.length > 1) {
+            let novoIndex = estado.categoriaAtualIndex;
+            while (novoIndex === estado.categoriaAtualIndex) {
+                novoIndex = Math.floor(Math.random() * estado.categorias.length);
+            }
+            estado.categoriaAtualIndex = novoIndex;
+        }
+
+        aplicarVisualCategoria(true);
+        mostrarAvisoCategoria();
+    }
+
+    function aplicarVisualCategoria(comAnimacao) {
+        const cat = categoriaAtual();
+        if (!cat) return;
+
+        const cor = CORES_CATEGORIA[cat.cor] || '#4a8b8f';
+        lixeiraJogadorEl.style.backgroundColor = cor;
+        lixeiraJogadorEl.querySelector('.lixeira-jogador-nome').textContent = cat.nome;
+
+        hudCategoria.textContent = `♻️ ${cat.nome}`;
+        hudCategoria.style.backgroundColor = cor;
+
+        if (comAnimacao) {
+            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-troca');
+        }
+    }
+
+    function mostrarAvisoCategoria() {
+        const cat = categoriaAtual();
+        if (!cat) return;
+
+        avisoCategoriaEl.textContent = `Agora colete: ${cat.nome}`;
+        avisoCategoriaEl.classList.add('visivel');
+
+        clearTimeout(estado.avisoTimeoutId);
+        estado.avisoTimeoutId = setTimeout(() => {
+            avisoCategoriaEl.classList.remove('visivel');
+        }, 1800);
+    }
+
+    // ===== Dificuldade progressiva =====
+
+    function atualizarDificuldade(dt) {
+        estado.tempoDesdeUltimoAumento += dt;
+        if (estado.tempoDesdeUltimoAumento >= 12) {
+            estado.tempoDesdeUltimoAumento = 0;
+            aumentarDificuldade();
+        }
+    }
+
+    function aumentarDificuldade() {
+        estado.nivelDificuldade++;
+        estado.velocidadeQueda = Math.min(estado.velocidadeQueda * 1.12, 320);
+        estado.intervaloSpawnMs = Math.max(estado.intervaloSpawnMs * 0.9, 550);
+        estado.tempoParaTrocarCategoria = Math.max(estado.tempoParaTrocarCategoria - 1, 11);
+    }
+
+    // ===== Eventos dos botoes =====
+
+    btnJogarInicio.addEventListener('click', () => {
+        somClique();
+        iniciarPartida();
+    });
+
+    btnJogarNovamente.addEventListener('click', reiniciarPartida);
+    btnPausar.addEventListener('click', alternarPausa);
+    btnContinuar.addEventListener('click', alternarPausa);
+
+    document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    btnJogarInicio.disabled = true;
+    btnJogarInicio.textContent = 'Carregando...';
+
+</script>
+
+</body>
+</html>

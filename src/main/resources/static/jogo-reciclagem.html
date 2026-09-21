@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>♻️ Jogo de Reciclagem - 10 Rodadas</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        }
+
+        body{
+            background:url('images/backgroud/fundo-jogo.jpg');
+            background-size:cover;
+            background-position:center;
+            background-repeat:no-repeat;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:10px;
+        }
+
+        .game-container{
+            background:#f0f7e6;
+            border-radius:35px;
+            padding:18px 25px;
+            box-shadow:0 20px 40px rgba(0,0,0,0.3);
+            max-width:1000px;
+            width:100%;
+            max-height:calc(100vh - 20px);
+            overflow:auto;
+            position:relative;
+        }
+
+        .manual-btn{
+            position:absolute;
+            top:15px;
+            right:15px;
+            width:42px;
+            height:42px;
+            border-radius:50%;
+            border:none;
+            background:#ffb347;
+            color:#1e3c3f;
+            font-size:26px;
+            font-weight:bold;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.25);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-decoration:none;
+            transition:transform 0.3s, background 0.3s;
+        }
+
+        .manual-btn:hover{
+            transform:scale(1.1);
+            background:#ffd27f;
+        }
+
+        .header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:15px;
+            background:#2d5a5e;
+            padding:12px 25px;
+            border-radius:30px;
+            color:white;
+        }
+
+        .round-info{
+            font-size:20px;
+            font-weight:bold;
+            background:#ffb347;
+            padding:8px 20px;
+            border-radius:30px;
+            color:#1e3c3f;
+        }
+
+        .score-info{
+            font-size:22px;
+            font-weight:bold;
+            background:#ff6f61;
+            padding:8px 20px;
+            border-radius:30px;
+        }
+
+        .attempts-info{
+            font-size:18px;
+            background:#4a8b8f;
+            padding:8px 20px;
+            border-radius:30px;
+        }
+
+        .lixeira-section{
+            background:#d9e6d9;
+            border-radius:30px;
+            padding:12px;
+            margin-bottom:15px;
+            text-align:center;
+        }
+
+        .lixeira-title{
+            font-size:18px;
+            color:#1e3c3f;
+            margin-bottom:5px;
+            font-weight:bold;
+        }
+
+        .lixeira-card{
+        background:#d9e6d9;
+        padding:0;
+        border-radius:30px;
+        display:inline-block;
+        min-width:auto;
+        box-shadow:none;
+        border:none;
+        cursor:pointer;
+        transition:transform 0.3s;
+    }
+
+        .lixeira-card:hover{
+            transform:scale(1.02);
+        }
+
+        .lixeira-icon{
+            margin-bottom:0;
+        }
+
+        .lixeira-icon img{
+            width:260px;
+            height:260px;
+            object-fit:contain;
+            display:block;
+        }
+
+        .itens-section{
+            margin-bottom:15px;
+        }
+
+        .itens-grid{
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:12px;
+            margin-top:10px;
+        }
+
+        .item-card{
+            background:white;
+            border-radius:22px;
+            padding:12px;
+            text-align:center;
+            box-shadow:0 5px 15px rgba(0,0,0,0.1);
+            cursor:grab;
+            transition:all 0.3s;
+            border:3px solid #4a8b8f;
+            user-select:none;
+        }
+
+        .item-card:hover{
+            transform:scale(1.05);
+            box-shadow:0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .item-icon{
+            width:75px;
+            height:75px;
+            margin:0 auto 6px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .item-icon img{
+            width:75px;
+            height:75px;
+            object-fit:contain;
+            display:block;
+            -webkit-user-drag:none;
+            user-select:none;
+            pointer-events:none;
+        }
+
+        .item-nome{
+            font-size:16px;
+            font-weight:bold;
+            color:#1e3c3f;
+            margin-bottom:0;
+        }
+
+        .message-area{
+            background:none;
+            border:none;
+            border-bottom:3px dashed #ffb347;
+            padding:14px 10px;
+            margin:12px 0 20px;
+            text-align:center;
+            font-size:22px;
+            font-weight:bold;
+            color:#8a5a00;
+            min-height:55px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            cursor:default;
+            box-shadow:none;
+        }
+
+        .message-area.message-sucesso{
+            border-bottom-color:#4CAF50;
+            color:#1b5e20;
+        }
+
+        .message-area.message-erro{
+            border-bottom-color:#e53935;
+            color:#b71c1c;
+        }
+
+        .next-round-btn{
+            background:#2d5a5e;
+            color:white;
+            border:none;
+            padding:14px 30px;
+            font-size:22px;
+            font-weight:bold;
+            border-radius:30px;
+            cursor:pointer;
+            width:100%;
+            display:none;
+            margin-top:8px;
+        }
+
+        .reset-btn{
+            background:#ff6f61;
+            color:white;
+            border:none;
+            padding:15px 30px;
+            font-size:20px;
+            font-weight:bold;
+            border-radius:30px;
+            cursor:pointer;
+            margin-top:20px;
+        }
+
+        .final-score{
+            text-align:center;
+            padding:40px;
+            background:white;
+            border-radius:40px;
+        }
+
+        .hidden{
+            display:none !important;
+        }
+
+        .drag-over{
+            background:#e0f0e0 !important;
+            border-color:#4CAF50 !important;
+        }
+
+        /* Estilos do Menu Inicial */
+        .start-menu {
+            text-align: center;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        .start-menu h1 {
+            color: #1e3c3f;
+            margin-bottom: 40px;
+            font-size: 42px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .menu-btn {
+            padding: 18px 30px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 35px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .play-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .play-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .tutorial-btn {
+            background: #ffb347;
+            color: #1e3c3f;
+        }
+
+        .tutorial-btn:hover {
+            background: #ffa726;
+            transform: scale(1.05);
+        }
+
+        .name-input {
+            padding: 15px;
+            border-radius: 20px;
+            border: 3px solid #2d5a5e;
+            font-size: 20px;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1e3c3f;
+            outline: none;
+        }
+
+        .name-input:focus {
+            border-color: #ffb347;
+        }
+
+        .final-message {
+            font-size: 24px;
+            color: #1e3c3f;
+            margin: 20px 0 30px;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        /* Estilos do Modal de Tutorial */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            height: 85%;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 35px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+            background: #ff6f61;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            line-height: 1;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Seletor de dificuldade */
+        .dificuldade-section {
+            width: 100%;
+            max-width: 340px;
+            margin-bottom: 25px;
+        }
+
+        .dificuldade-label {
+            color: #1e3c3f;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .dificuldade-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dificuldade-btn {
+            flex: 1;
+            background: white;
+            border: 3px solid #d9e6d9;
+            border-radius: 18px;
+            padding: 10px 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e3c3f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dificuldade-btn span {
+            display: block;
+            font-weight: normal;
+            font-size: 11px;
+            margin-top: 3px;
+            color: #4a8b8f;
+        }
+
+        .dificuldade-btn:hover {
+            border-color: #ffb347;
+        }
+
+        .dificuldade-btn.active {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .ranking-btn {
+            background: #4a8b8f;
+            color: white;
+        }
+
+        .ranking-btn:hover {
+            background: #3d7377;
+            transform: scale(1.05);
+        }
+
+        /* Timer da rodada */
+        .timer-info {
+            font-size: 18px;
+            font-weight: bold;
+            background: #4CAF50;
+            padding: 8px 20px;
+            border-radius: 30px;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .timer-info.timer-warning {
+            background: #ffb347;
+            color: #1e3c3f;
+        }
+
+        .timer-info.timer-danger {
+            background: #ff3b30;
+            animation: pulse-timer 0.6s infinite;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* Fundo de urgencia quando o tempo esta quase acabando */
+        .lixeira-section.tempo-critico,
+        .itens-grid.tempo-critico {
+            animation: fundo-critico-pulse 0.7s infinite;
+        }
+
+        .itens-grid.tempo-critico {
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        @keyframes fundo-critico-pulse {
+            0%, 100% { background-color: #ffcdd2; }
+            50% { background-color: #ff8a80; }
+        }
+
+        /* Ranking */
+        .final-time-display {
+            font-size: 18px;
+            color: #4a8b8f;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ranking-tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0 12px;
+            flex-wrap: wrap;
+        }
+
+        .ranking-tab-btn {
+            background: #d9e6d9;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e3c3f;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ranking-tab-btn.active {
+            background: #2d5a5e;
+            color: white;
+        }
+
+        .ranking-table-wrap {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .ranking-table th, .ranking-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #d9e6d9;
+            color: #1e3c3f;
+        }
+
+        .ranking-table th {
+            background: #f0f7e6;
+            position: sticky;
+            top: 0;
+        }
+
+        .ranking-table tr.ranking-destaque {
+            background: #fff3d6;
+            font-weight: bold;
+        }
+
+        .ranking-vazio {
+            color: #4a8b8f;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-container.ranking-modal-container {
+            height: auto;
+            max-height: 85%;
+            padding: 30px 20px 20px;
+            overflow-y: auto;
+        }
+
+        /* Botão de som */
+        .sound-btn {
+            position:absolute;
+            top:15px;
+            left:15px;
+            width:42px;
+            height:42px;
+            border-radius:50%;
+            border:none;
+            background:#4a8b8f;
+            color:white;
+            font-size:20px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,0.25);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:transform 0.2s, background 0.3s;
+            z-index:10;
+        }
+
+        .sound-btn:hover{
+            transform:scale(1.1);
+            background:#5a9ba0;
+        }
+
+        .home-btn{
+            left:65px;
+            text-decoration:none;
+            background:#ff6f61;
+        }
+
+        .home-btn:hover{
+            background:#ff8a7f;
+        }
+
+        .sound-btn:active{
+            transform:scale(0.9);
+        }
+
+        /* Feedback tátil em botões */
+        .menu-btn:active,
+        .dificuldade-btn:active,
+        .next-round-btn:active,
+        .reset-btn:active,
+        .manual-btn:active,
+        .ranking-tab-btn:active,
+        .modal-close:active{
+            transform:scale(0.93);
+        }
+
+        .item-card:active{
+            transform:scale(0.96);
+        }
+
+        /* Animações de acerto/erro */
+        .lixeira-shake{
+            animation:lixeira-shake-anim 0.4s;
+        }
+
+        @keyframes lixeira-shake-anim{
+            0%,100%{ transform:translateX(0); }
+            20%{ transform:translateX(-12px) rotate(-3deg); }
+            40%{ transform:translateX(10px) rotate(3deg); }
+            60%{ transform:translateX(-8px) rotate(-2deg); }
+            80%{ transform:translateX(8px) rotate(2deg); }
+        }
+
+        .lixeira-success{
+            animation:lixeira-success-anim 0.5s;
+        }
+
+        @keyframes lixeira-success-anim{
+            0%{ transform:scale(1); }
+            35%{ transform:scale(1.15); box-shadow:0 0 0 14px rgba(76,175,80,0.28); }
+            100%{ transform:scale(1); box-shadow:none; }
+        }
+
+        .message-pop{
+            animation:message-pop-anim 0.3s;
+        }
+
+        @keyframes message-pop-anim{
+            0%{ transform:scale(0.85); opacity:0.4; }
+            100%{ transform:scale(1); opacity:1; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="game-container">
+
+    <button class="sound-btn" id="soundToggleBtn" onclick="alternarSom()" title="Ativar/desativar som">🔊</button>
+    <a class="sound-btn home-btn" href="index.html" title="Voltar ao menu de jogos">🏠</a>
+
+    <!-- Menu Inicial -->
+    <div id="startMenu" class="start-menu">
+        <h1>♻️ Jogo de Reciclagem</h1>
+        <input type="text" id="playerName" class="name-input" placeholder="Digite seu nome..." maxlength="20">
+
+        <div class="dificuldade-section">
+            <div class="dificuldade-label">Escolha a dificuldade:</div>
+            <div class="dificuldade-buttons">
+                <button class="dificuldade-btn active" data-dificuldade="FACIL" onclick="selecionarDificuldade('FACIL', this)">
+                    🟢 Fácil<span>30s por rodada</span>
+                </button>
+                <button class="dificuldade-btn" data-dificuldade="MEDIO" onclick="selecionarDificuldade('MEDIO', this)">
+                    🟠 Médio<span>15s por rodada</span>
+                </button>
+                <button class="dificuldade-btn" data-dificuldade="DIFICIL" onclick="selecionarDificuldade('DIFICIL', this)">
+                    🔴 Difícil<span>7s por rodada</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="menu-buttons">
+            <button class="menu-btn play-btn" onclick="comecarJogo()">
+                🎮 JOGAR
+            </button>
+            <button class="menu-btn ranking-btn" onclick="abrirRanking()">
+                🏆 RANKING
+            </button>
+            <button class="menu-btn tutorial-btn" onclick="abrirTutorial()">
+                📖 TUTORIAL
+            </button>
+        </div>
+    </div>
+
+    <!-- Conteúdo do Jogo -->
+    <div id="gameContent" class="hidden">
+
+        <button class="manual-btn" onclick="abrirTutorial()" title="Abrir manual do jogo">
+            ?
+        </button>
+
+        <div class="header">
+            <div class="round-info" id="roundDisplay">Rodada 1/10</div>
+            <div class="score-info" id="scoreDisplay">0 Pontos</div>
+            <div class="timer-info" id="timerDisplay">⏱️ 30s</div>
+            <div class="attempts-info" id="attemptsDisplay">1ª tentativa: 10 pontos</div>
+        </div>
+
+        <div id="gameArea">
+
+            <div class="lixeira-section" id="lixeiraSection">
+                <div class="lixeira-title">Arraste um item para a lixeira:</div>
+
+                <div class="lixeira-card" id="lixeiraAtual">
+
+                    <div class="lixeira-icon" id="lixeiraIcon"></div>
+
+                </div>
+            </div>
+
+            <div class="itens-section">
+
+                <h3 style="color:#1e3c3f;margin-bottom:15px;">
+                    Escolha um item para reciclar:
+                </h3>
+
+                <div class="itens-grid" id="itensGrid"></div>
+
+            </div>
+
+            <div class="message-area" id="messageArea">
+                Arraste um item para a lixeira
+            </div>
+
+            <button class="next-round-btn" id="nextRoundBtn" onclick="proximaRodada()">
+                ▶️ PRÓXIMA RODADA
+            </button>
+
+        </div>
+
+        <div id="finalScoreArea" class="final-score hidden">
+
+            <h2> FIM DE JOGO! </h2>
+
+            <p id="finalScoreDisplay" style="font-size: 60px; font-weight: bold; color: #ff6f61; margin: 10px 0;">0</p>
+
+            <p id="finalTimeDisplay" class="final-time-display"></p>
+
+            <p id="finalMessage" class="final-message"></p>
+
+            <button class="reset-btn" onclick="voltarAoMenu()">
+                🔄 JOGAR NOVAMENTE
+            </button>
+
+            <div class="ranking-tabs" id="finalRankingTabs"></div>
+            <div class="ranking-table-wrap" id="finalRankingTable"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal de Tutorial -->
+<div id="tutorialModal" class="modal-overlay" onclick="fecharTutorialFora(event)">
+    <div class="modal-container">
+        <span class="modal-close" onclick="fecharTutorial()">&times;</span>
+        <iframe src="manual_jogo_reciclagem.html" class="modal-iframe"></iframe>
+    </div>
+</div>
+
+<!-- Modal de Ranking -->
+<div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
+    <div class="modal-container ranking-modal-container">
+        <span class="modal-close" onclick="fecharRanking()">&times;</span>
+        <h2 style="color:#1e3c3f;text-align:center;">🏆 Ranking</h2>
+        <div class="ranking-tabs" id="rankingModalTabs"></div>
+        <div class="ranking-table-wrap" id="rankingModalTable"></div>
+    </div>
+</div>
+
+<script>
+
+    let sessionId = null;
+    let pontuacaoAtual = 0;
+    let nomeJogadorAtual = '';
+    let dificuldadeSelecionada = 'FACIL';
+    let dificuldadeAtual = 'FACIL';
+    let tempoLimiteAtual = 0;
+    let jogadaBloqueada = false;
+    let timerInterval = null;
+    let timerDeadline = null;
+    let rankingCacheAtual = null;
+    let ultimoSegundoTick = null;
+
+    // ===== Efeitos sonoros (arquivos em /sounds) =====
+
+    let soundEnabled = localStorage.getItem('jogoReciclagem_som') !== 'off';
+    let tempoPassandoTocando = false;
+
+    const ARQUIVOS_SOM = {
+        clique: 'sounds/clique.mp3',
+        acerto: 'sounds/acerto.mp3',
+        erro: 'sounds/erro.mp3',
+        comecoJogo: 'sounds/comeco-jogo.mp3',
+        tempoPassando: 'sounds/tempo-passando.mp3'
+    };
+
+    const audioElementos = {};
+    Object.keys(ARQUIVOS_SOM).forEach(chave => {
+        const audio = new Audio(ARQUIVOS_SOM[chave]);
+        audio.preload = 'auto';
+        audioElementos[chave] = audio;
+    });
+
+    function tocarSom(chave, { volume = 0.8 } = {}) {
+        if (!soundEnabled) return;
+        const original = audioElementos[chave];
+        if (!original) return;
+        try {
+            const instancia = original.cloneNode();
+            instancia.volume = volume;
+            instancia.play().catch(() => {});
+        } catch (e) {
+            console.warn('Não foi possível tocar som:', e);
+        }
+    }
+
+    function somClick() {
+        tocarSom('clique', { volume: 0.6 });
+    }
+
+    function somAcerto() {
+        tocarSom('acerto', { volume: 0.8 });
+    }
+
+    function somErro() {
+        tocarSom('erro', { volume: 0.7 });
+    }
+
+    function somTempoEsgotado() {
+        tocarSom('erro', { volume: 0.7 });
+    }
+
+    function somComecoJogo() {
+        tocarSom('comecoJogo', { volume: 0.7 });
+    }
+
+    function somFimDeJogo() {
+        tocarSom('acerto', { volume: 0.9 });
+    }
+
+    function iniciarSomTempoPassando() {
+        if (!soundEnabled || tempoPassandoTocando) return;
+        const audio = audioElementos.tempoPassando;
+        if (!audio) return;
+        tempoPassandoTocando = true;
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+    }
+
+    function pararSomTempoPassando() {
+        const audio = audioElementos.tempoPassando;
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.loop = false;
+        }
+        tempoPassandoTocando = false;
+    }
+
+    function alternarSom() {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        if (!soundEnabled) {
+            pararSomTempoPassando();
+        } else {
+            somClick();
+        }
+    }
+
+    function tocarAnimacao(elemento, classe) {
+        elemento.classList.remove(classe);
+        void elemento.offsetWidth; // reinicia a animação mesmo se já estava ativa
+        elemento.classList.add(classe);
+        elemento.addEventListener('animationend', () => elemento.classList.remove(classe), { once: true });
+    }
+
+    // ===== Fim dos efeitos sonoros =====
+
+    const roundDisplay=document.getElementById('roundDisplay');
+    const scoreDisplay=document.getElementById('scoreDisplay');
+    const attemptsDisplay=document.getElementById('attemptsDisplay');
+    const timerDisplay=document.getElementById('timerDisplay');
+
+    const lixeiraIcon=document.getElementById('lixeiraIcon');
+    const lixeiraSection=document.getElementById('lixeiraSection');
+
+    const itensGrid=document.getElementById('itensGrid');
+    const messageArea=document.getElementById('messageArea');
+
+    const nextRoundBtn=document.getElementById('nextRoundBtn');
+    const lixeiraCard=document.getElementById('lixeiraAtual');
+
+    const finalScoreArea=document.getElementById('finalScoreArea');
+    const finalScoreDisplay=document.getElementById('finalScoreDisplay');
+
+    async function comecarJogo() {
+        const inputNome = document.getElementById('playerName');
+        const nome = inputNome.value.trim();
+
+        somClick();
+
+        if (!nome) {
+            alert("Por favor, digite seu nome para começar!");
+            inputNome.focus();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/jogo/iniciar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nomeJogador: nome, dificuldade: dificuldadeSelecionada })
+            });
+
+            if (!response.ok) {
+                throw new Error('Falha ao iniciar o jogo');
+            }
+
+            const dados = await response.json();
+            sessionId = dados.sessionId;
+            pontuacaoAtual = 0;
+            nomeJogadorAtual = nome;
+            dificuldadeAtual = dificuldadeSelecionada;
+
+            document.getElementById('startMenu').classList.add('hidden');
+            document.getElementById('gameContent').classList.remove('hidden');
+            document.getElementById('gameArea').classList.remove('hidden');
+            finalScoreArea.classList.add('hidden');
+            scoreDisplay.textContent = "0 Pontos";
+
+            somComecoJogo();
+            exibirRodada(dados.rodada);
+        } catch (error) {
+            console.error("Erro ao iniciar jogo:", error);
+            alert("Erro ao conectar com o servidor. Verifique se o backend está rodando.");
+        }
+    }
+
+    function exibirRodada(rodada){
+
+        jogadaBloqueada = false;
+        pararSomTempoPassando();
+
+        roundDisplay.textContent=`Rodada ${rodada.numeroRodada}/${rodada.totalRodadas}`;
+        atualizarTentativas(rodada.tentativaAtual, rodada.pontosProximaTentativa);
+        iniciarTimer(rodada.tempoLimiteSegundos);
+
+        lixeiraIcon.innerHTML=`<img src="${rodada.lixeira.imagemUrl}" alt="${rodada.lixeira.nome}">`;
+
+        itensGrid.innerHTML='';
+
+        rodada.opcoes.forEach(item=>{
+
+            const card=document.createElement('div');
+            card.className='item-card';
+            card.draggable=true;
+
+            card.innerHTML=`
+    <div class="item-icon"><img src="${item.imagemUrl}" alt="${item.nome}" draggable="false"></div>
+    <div class="item-nome">${item.nome}</div>
+    `;
+
+            card.addEventListener('dragstart',e=>{
+                e.dataTransfer.setData('id',item.id);
+                e.dataTransfer.setDragImage(card, card.offsetWidth / 2, card.offsetHeight / 2);
+            });
+
+            itensGrid.appendChild(card);
+
+        });
+
+        messageArea.classList.remove('message-sucesso', 'message-erro');
+        messageArea.innerHTML="Arraste um item para a lixeira";
+        nextRoundBtn.style.display="none";
+
+    }
+
+    function atualizarTentativas(tentativaAtual, pontosProximaTentativa){
+        attemptsDisplay.textContent=`${tentativaAtual}ª tentativa: ${pontosProximaTentativa} pontos`;
+    }
+
+    lixeiraCard.addEventListener('dragover',e=>{
+        e.preventDefault();
+    });
+
+    lixeiraCard.addEventListener('drop',e=>{
+
+        if (jogadaBloqueada) return;
+
+        const id=e.dataTransfer.getData('id');
+
+        processarJogada(parseInt(id));
+
+    });
+
+    async function processarJogada(itemId) {
+        if (!sessionId || jogadaBloqueada) return;
+
+        try {
+            const response = await fetch(`/api/jogo/${sessionId}/jogada`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Falha ao processar jogada');
+            }
+
+            const resultado = await response.json();
+            pontuacaoAtual = resultado.pontuacaoTotal;
+            scoreDisplay.textContent = `${pontuacaoAtual} Pontos`;
+
+            if (resultado.acertou) {
+                jogadaBloqueada = true;
+                pararTimer();
+                somAcerto();
+                tocarAnimacao(lixeiraCard, 'lixeira-success');
+                messageArea.classList.remove('message-erro');
+                messageArea.classList.add('message-sucesso');
+                messageArea.innerHTML = "🎉 ACERTOU!";
+                tocarAnimacao(messageArea, 'message-pop');
+
+                if (resultado.jogoFinalizado) {
+                    finalizarJogo(resultado.mensagemFinal, resultado.tempoTotalMs);
+                } else {
+                    nextRoundBtn.style.display = "block";
+                }
+            } else {
+                somErro();
+                tocarAnimacao(lixeiraCard, 'lixeira-shake');
+                atualizarTentativas(resultado.tentativaAtual, resultado.pontosProximaTentativa);
+                messageArea.classList.remove('message-sucesso');
+                messageArea.classList.add('message-erro');
+                messageArea.innerHTML = "❌ ERROU!";
+                tocarAnimacao(messageArea, 'message-pop');
+            }
+        } catch (error) {
+            console.error("Erro ao processar jogada:", error);
+            alert("Erro ao conectar com o servidor.");
+        }
+    }
+
+    function iniciarTimer(segundos) {
+        pararTimer();
+        tempoLimiteAtual = segundos;
+        timerDeadline = Date.now() + segundos * 1000;
+        atualizarTimerDisplay();
+        timerInterval = setInterval(atualizarTimerDisplay, 200);
+    }
+
+    function pararTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        pararSomTempoPassando();
+        lixeiraSection.classList.remove('tempo-critico');
+        itensGrid.classList.remove('tempo-critico');
+    }
+
+    function atualizarTimerDisplay() {
+        const restanteMs = timerDeadline - Date.now();
+        const restanteSeg = Math.max(0, Math.ceil(restanteMs / 1000));
+
+        timerDisplay.textContent = `⏱️ ${restanteSeg}s`;
+        timerDisplay.classList.remove('timer-warning', 'timer-danger');
+        lixeiraSection.classList.remove('tempo-critico');
+        itensGrid.classList.remove('tempo-critico');
+
+        if (restanteSeg <= 3) {
+            timerDisplay.classList.add('timer-danger');
+            if (restanteSeg > 0) {
+                lixeiraSection.classList.add('tempo-critico');
+                itensGrid.classList.add('tempo-critico');
+                iniciarSomTempoPassando();
+            }
+        } else if (restanteSeg <= Math.ceil(tempoLimiteAtual / 2)) {
+            timerDisplay.classList.add('timer-warning');
+        }
+
+        if (restanteMs <= 0 && !jogadaBloqueada) {
+            jogadaBloqueada = true;
+            pararTimer();
+            aoTempoEsgotar();
+        }
+    }
+
+    async function aoTempoEsgotar() {
+        if (!sessionId) return;
+
+        somTempoEsgotado();
+        tocarAnimacao(lixeiraCard, 'lixeira-shake');
+        messageArea.classList.remove('message-sucesso');
+        messageArea.classList.add('message-erro');
+        messageArea.innerHTML = "⏰ TEMPO ESGOTADO!";
+        tocarAnimacao(messageArea, 'message-pop');
+        nextRoundBtn.style.display = "none";
+
+        try {
+            const response = await fetch(`/api/jogo/${sessionId}/tempo-esgotado`, { method: 'POST' });
+
+            if (!response.ok) {
+                throw new Error('Falha ao registrar tempo esgotado');
+            }
+
+            const dados = await response.json();
+            pontuacaoAtual = dados.pontuacaoTotal;
+            scoreDisplay.textContent = `${pontuacaoAtual} Pontos`;
+
+            if (dados.jogoFinalizado) {
+                finalizarJogo(dados.mensagemFinal, dados.tempoTotalMs);
+            } else {
+                setTimeout(() => exibirRodada(dados.proximaRodada), 1200);
+            }
+        } catch (error) {
+            console.error("Erro ao registrar tempo esgotado:", error);
+            alert("Erro ao conectar com o servidor.");
+        }
+    }
+
+    async function proximaRodada(){
+        if (!sessionId) return;
+
+        somClick();
+        nextRoundBtn.style.display="none";
+
+        try {
+            const response = await fetch(`/api/jogo/${sessionId}/proxima-rodada`, { method: 'POST' });
+
+            if (!response.ok) {
+                throw new Error('Falha ao avançar rodada');
+            }
+
+            const rodada = await response.json();
+            exibirRodada(rodada);
+        } catch (error) {
+            console.error("Erro ao avançar rodada:", error);
+            alert("Erro ao conectar com o servidor.");
+        }
+    }
+
+    function voltarAoMenu() {
+        somClick();
+        sessionId = null;
+        pararTimer();
+        document.getElementById('gameContent').classList.add('hidden');
+        document.getElementById('startMenu').classList.remove('hidden');
+        document.getElementById('playerName').focus();
+    }
+
+    async function finalizarJogo(mensagemFinal, tempoTotalMs){
+
+        pararTimer();
+        somFimDeJogo();
+
+        document.getElementById('gameArea').classList.add('hidden');
+
+        finalScoreArea.classList.remove('hidden');
+
+        finalScoreDisplay.textContent=pontuacaoAtual + " Pontos";
+
+        document.getElementById('finalTimeDisplay').textContent = `⏱️ Tempo total: ${(tempoTotalMs / 1000).toFixed(1)}s`;
+
+        document.getElementById('finalMessage').textContent = mensagemFinal;
+
+        const tabsEl = document.getElementById('finalRankingTabs');
+        const tabelaEl = document.getElementById('finalRankingTable');
+        tabelaEl.innerHTML = '<p class="ranking-vazio">Carregando ranking...</p>';
+
+        try {
+            rankingCacheAtual = await buscarTodosRankings();
+            criarTabsRanking(tabsEl, tabelaEl, dificuldadeAtual, {
+                nome: nomeJogadorAtual,
+                pontuacao: pontuacaoAtual,
+                tempoTotalMs: tempoTotalMs,
+                dificuldade: dificuldadeAtual
+            });
+        } catch (error) {
+            console.error("Erro ao carregar ranking:", error);
+            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível carregar o ranking.</p>';
+        }
+    }
+
+    function selecionarDificuldade(dificuldade, botaoEl) {
+        somClick();
+        dificuldadeSelecionada = dificuldade;
+        document.querySelectorAll('.dificuldade-btn').forEach(b => b.classList.remove('active'));
+        botaoEl.classList.add('active');
+    }
+
+    function escapeHtml(texto) {
+        const div = document.createElement('div');
+        div.textContent = texto;
+        return div.innerHTML;
+    }
+
+    async function buscarTodosRankings() {
+        const response = await fetch('/api/ranking');
+        if (!response.ok) {
+            throw new Error('Falha ao buscar ranking');
+        }
+        return response.json();
+    }
+
+    const NOMES_DIFICULDADE = { FACIL: '🟢 Fácil', MEDIO: '🟠 Médio', DIFICIL: '🔴 Difícil' };
+
+    function criarTabsRanking(containerTabs, containerTabela, dificuldadeInicial, destaque) {
+        containerTabs.innerHTML = '';
+
+        Object.keys(NOMES_DIFICULDADE).forEach(dificuldade => {
+            const btn = document.createElement('button');
+            btn.className = 'ranking-tab-btn' + (dificuldade === dificuldadeInicial ? ' active' : '');
+            btn.textContent = NOMES_DIFICULDADE[dificuldade];
+            btn.onclick = () => {
+                containerTabs.querySelectorAll('.ranking-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderizarTabelaRanking(containerTabela, rankingCacheAtual[dificuldade],
+                    destaque && destaque.dificuldade === dificuldade ? destaque : null);
+            };
+            containerTabs.appendChild(btn);
+        });
+
+        renderizarTabelaRanking(containerTabela, rankingCacheAtual[dificuldadeInicial],
+            destaque && destaque.dificuldade === dificuldadeInicial ? destaque : null);
+    }
+
+    function renderizarTabelaRanking(container, entradas, destaque) {
+        if (!entradas || entradas.length === 0) {
+            container.innerHTML = '<p class="ranking-vazio">Nenhuma pontuação registrada ainda.</p>';
+            return;
+        }
+
+        let html = '<table class="ranking-table"><thead><tr><th>#</th><th>Nome</th><th>Pontos</th><th>Tempo</th></tr></thead><tbody>';
+
+        entradas.forEach((entrada, index) => {
+            const destacar = destaque
+                && entrada.nomeJogador === destaque.nome
+                && entrada.pontuacao === destaque.pontuacao
+                && entrada.tempoTotalMs === destaque.tempoTotalMs;
+
+            html += `<tr class="${destacar ? 'ranking-destaque' : ''}">
+                <td>${index + 1}º</td>
+                <td>${escapeHtml(entrada.nomeJogador)}</td>
+                <td>${entrada.pontuacao}</td>
+                <td>${(entrada.tempoTotalMs / 1000).toFixed(1)}s</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    async function abrirRanking() {
+        somClick();
+        document.getElementById('rankingModal').style.display = 'flex';
+        const tabsEl = document.getElementById('rankingModalTabs');
+        const tabelaEl = document.getElementById('rankingModalTable');
+        tabelaEl.innerHTML = '<p class="ranking-vazio">Carregando ranking...</p>';
+
+        try {
+            rankingCacheAtual = await buscarTodosRankings();
+            criarTabsRanking(tabsEl, tabelaEl, dificuldadeSelecionada, null);
+        } catch (error) {
+            console.error("Erro ao carregar ranking:", error);
+            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível carregar o ranking.</p>';
+        }
+    }
+
+    function fecharRanking() {
+        somClick();
+        document.getElementById('rankingModal').style.display = 'none';
+    }
+
+    function fecharRankingFora(event) {
+        if (event.target.id === 'rankingModal') {
+            fecharRanking();
+        }
+    }
+
+    function abrirTutorial() {
+        somClick();
+        document.getElementById('tutorialModal').style.display = 'flex';
+    }
+
+    function fecharTutorial() {
+        somClick();
+        document.getElementById('tutorialModal').style.display = 'none';
+    }
+
+    function fecharTutorialFora(event) {
+        if (event.target.id === 'tutorialModal') {
+            fecharTutorial();
+        }
+    }
+
+    window.onload = function() {
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+
+        document.getElementById('playerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                comecarJogo();
+            }
+        });
+    };
+
+</script>
+
+</body>
+</html>
