@@ -123,7 +123,7 @@ public class JogoService {
     private ResultadoJogada finalizarJogo(String sessionId, SessaoJogo sessao, int pontosGanhos, int tentativaAtual) {
         String mensagemFinal = gerarMensagemFinal(sessao.nomeJogador, sessao.pontuacao);
         List<RankingEntry> ranking = rankingService.registrarPontuacao(
-                sessao.dificuldade, sessao.nomeJogador, sessao.pontuacao, sessao.tempoTotalMs);
+                RankingService.JOGO_RECICLAGEM, sessao.dificuldade, sessao.nomeJogador, sessao.pontuacao, sessao.tempoTotalMs);
         sessoes.remove(sessionId);
         return new ResultadoJogada(true, pontosGanhos, sessao.pontuacao, tentativaAtual, 0, true,
                 mensagemFinal, sessao.tempoTotalMs, ranking);

@@ -5,6 +5,7 @@ import com.reciclagem.jogo.dto.IniciarJogoResponse;
 import com.reciclagem.jogo.dto.JogadaRequest;
 import com.reciclagem.jogo.dto.ResultadoJogada;
 import com.reciclagem.jogo.dto.Rodada;
+import com.reciclagem.jogo.dto.SubmeterPontuacaoRequest;
 import com.reciclagem.jogo.dto.TempoEsgotadoResponse;
 import com.reciclagem.jogo.model.Dificuldade;
 import com.reciclagem.jogo.model.Item;
@@ -32,6 +33,8 @@ import java.util.Map;
 public class JogoApiController {
 
     private static final int NOME_JOGADOR_TAMANHO_MAXIMO = 20;
+    private static final int PONTUACAO_MAXIMA_CACHOEIRA_LIXO = 5000;
+    private static final long TEMPO_MAXIMO_CACHOEIRA_LIXO_MS = 180_000L;
 
     private final JogoService jogoService;
     private final RankingService rankingService;
@@ -83,14 +86,44 @@ public class JogoApiController {
 
     @GetMapping("/ranking/{dificuldade}")
     public ResponseEntity<List<RankingEntry>> getRankingPorDificuldade(@PathVariable String dificuldade) {
-        return ResponseEntity.ok(rankingService.obterRanking(Dificuldade.fromTexto(dificuldade)));
+        return ResponseEntity.ok(rankingService.obterRanking(RankingService.JOGO_RECICLAGEM, Dificuldade.fromTexto(dificuldade)));
     }
 
     @GetMapping("/ranking")
     public ResponseEntity<Map<String, List<RankingEntry>>> getTodosRankings() {
+        return ResponseEntity.ok(mapearRankingPorNomeDificuldade(RankingService.JOGO_RECICLAGEM));
+    }
+
+    @GetMapping("/ranking/cachoeira-lixo")
+    public ResponseEntity<Map<String, List<RankingEntry>>> getTodosRankingsCachoeiraLixo() {
+        return ResponseEntity.ok(mapearRankingPorNomeDificuldade(RankingService.JOGO_CACHOEIRA_LIXO));
+    }
+
+    @PostMapping("/ranking/cachoeira-lixo")
+    public ResponseEntity<List<RankingEntry>> registrarPontuacaoCachoeiraLixo(@RequestBody SubmeterPontuacaoRequest request) {
+        String nomeBruto = request.getNomeJogador();
+        if (nomeBruto == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String nome = nomeBruto.trim().replaceAll("\\p{Cntrl}", "");
+        if (nome.isBlank() || nome.length() > NOME_JOGADOR_TAMANHO_MAXIMO) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Dificuldade dificuldade = Dificuldade.fromTexto(request.getDificuldade());
+        int pontuacao = Math.max(0, Math.min(request.getPontuacao(), PONTUACAO_MAXIMA_CACHOEIRA_LIXO));
+        long tempoTotalMs = Math.max(0, Math.min(request.getTempoTotalMs(), TEMPO_MAXIMO_CACHOEIRA_LIXO_MS));
+
+        List<RankingEntry> ranking = rankingService.registrarPontuacao(
+                RankingService.JOGO_CACHOEIRA_LIXO, dificuldade, nome, pontuacao, tempoTotalMs);
+        return ResponseEntity.ok(ranking);
+    }
+
+    private Map<String, List<RankingEntry>> mapearRankingPorNomeDificuldade(String jogo) {
         Map<String, List<RankingEntry>> resposta = new LinkedHashMap<>();
-        rankingService.obterTodosRankings().forEach((dificuldade, entradas) -> resposta.put(dificuldade.name(), entradas));
-        return ResponseEntity.ok(resposta);
+        rankingService.obterTodosRankings(jogo).forEach((dificuldade, entradas) -> resposta.put(dificuldade.name(), entradas));
+        return resposta;
     }
 
     @ExceptionHandler(SessaoNaoEncontradaException.class)
