@@ -183,6 +183,9 @@
             height:75px;
             object-fit:contain;
             display:block;
+            -webkit-user-drag:none;
+            user-select:none;
+            pointer-events:none;
         }
 
         .item-nome{
@@ -492,6 +495,22 @@
             50% { transform: scale(1.08); }
         }
 
+        /* Fundo de urgencia quando o tempo esta quase acabando */
+        .lixeira-section.tempo-critico,
+        .itens-grid.tempo-critico {
+            animation: fundo-critico-pulse 0.7s infinite;
+        }
+
+        .itens-grid.tempo-critico {
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        @keyframes fundo-critico-pulse {
+            0%, 100% { background-color: #ffcdd2; }
+            50% { background-color: #ff8a80; }
+        }
+
         /* Ranking */
         .final-time-display {
             font-size: 18px;
@@ -701,7 +720,7 @@
 
         <div id="gameArea">
 
-            <div class="lixeira-section">
+            <div class="lixeira-section" id="lixeiraSection">
                 <div class="lixeira-title">Arraste um item para a lixeira:</div>
 
                 <div class="lixeira-card" id="lixeiraAtual">
@@ -890,6 +909,7 @@
     const timerDisplay=document.getElementById('timerDisplay');
 
     const lixeiraIcon=document.getElementById('lixeiraIcon');
+    const lixeiraSection=document.getElementById('lixeiraSection');
 
     const itensGrid=document.getElementById('itensGrid');
     const messageArea=document.getElementById('messageArea');
@@ -963,12 +983,13 @@
             card.draggable=true;
 
             card.innerHTML=`
-    <div class="item-icon"><img src="${item.imagemUrl}" alt="${item.nome}"></div>
+    <div class="item-icon"><img src="${item.imagemUrl}" alt="${item.nome}" draggable="false"></div>
     <div class="item-nome">${item.nome}</div>
     `;
 
             card.addEventListener('dragstart',e=>{
                 e.dataTransfer.setData('id',item.id);
+                e.dataTransfer.setDragImage(card, card.offsetWidth / 2, card.offsetHeight / 2);
             });
 
             itensGrid.appendChild(card);
@@ -1061,6 +1082,8 @@
             timerInterval = null;
         }
         pararSomTempoPassando();
+        lixeiraSection.classList.remove('tempo-critico');
+        itensGrid.classList.remove('tempo-critico');
     }
 
     function atualizarTimerDisplay() {
@@ -1069,10 +1092,14 @@
 
         timerDisplay.textContent = `⏱️ ${restanteSeg}s`;
         timerDisplay.classList.remove('timer-warning', 'timer-danger');
+        lixeiraSection.classList.remove('tempo-critico');
+        itensGrid.classList.remove('tempo-critico');
 
         if (restanteSeg <= 3) {
             timerDisplay.classList.add('timer-danger');
             if (restanteSeg > 0) {
+                lixeiraSection.classList.add('tempo-critico');
+                itensGrid.classList.add('tempo-critico');
                 iniciarSomTempoPassando();
             }
         } else if (restanteSeg <= Math.ceil(tempoLimiteAtual / 2)) {
