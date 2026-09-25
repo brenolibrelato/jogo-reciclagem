@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>♻️ Jogo de Reciclagem - 10 Rodadas</title>
+    <title>Separação de Materiais - 10 Rodadas</title>
 
     <style>
 
@@ -672,44 +672,46 @@
         }
 
     </style>
+    <link rel="stylesheet" href="css/identidade.css">
 </head>
 
 <body>
 
 <div class="game-container">
 
-    <button class="sound-btn" id="soundToggleBtn" onclick="alternarSom()" title="Ativar/desativar som">🔊</button>
-    <a class="sound-btn home-btn" href="index.html" title="Voltar ao menu de jogos">🏠</a>
+    <button class="sound-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som</button>
+    <a class="sound-btn home-btn" href="index.html" title="Voltar ao menu de jogos">Início</a>
 
     <!-- Menu Inicial -->
     <div id="startMenu" class="start-menu">
-        <h1>♻️ Jogo de Reciclagem</h1>
+        <h1>Separação de Materiais</h1>
+        <label for="playerName" class="field-label">Seu nome</label>
         <input type="text" id="playerName" class="name-input" placeholder="Digite seu nome..." maxlength="20">
 
         <div class="dificuldade-section">
             <div class="dificuldade-label">Escolha a dificuldade:</div>
             <div class="dificuldade-buttons">
                 <button class="dificuldade-btn active" data-dificuldade="FACIL" onclick="selecionarDificuldade('FACIL', this)">
-                    🟢 Fácil<span>30s por rodada</span>
+                    Fácil<span>30s por rodada</span>
                 </button>
                 <button class="dificuldade-btn" data-dificuldade="MEDIO" onclick="selecionarDificuldade('MEDIO', this)">
-                    🟠 Médio<span>15s por rodada</span>
+                    Médio<span>15s por rodada</span>
                 </button>
                 <button class="dificuldade-btn" data-dificuldade="DIFICIL" onclick="selecionarDificuldade('DIFICIL', this)">
-                    🔴 Difícil<span>7s por rodada</span>
+                    Difícil<span>7s por rodada</span>
                 </button>
             </div>
         </div>
 
         <div class="menu-buttons">
             <button class="menu-btn play-btn" onclick="comecarJogo()">
-                🎮 JOGAR
+                Começar
             </button>
             <button class="menu-btn ranking-btn" onclick="abrirRanking()">
-                🏆 RANKING
+                Ranking
             </button>
             <button class="menu-btn tutorial-btn" onclick="abrirTutorial()">
-                📖 TUTORIAL
+                Como jogar
             </button>
         </div>
     </div>
@@ -755,7 +757,7 @@
             </div>
 
             <button class="next-round-btn" id="nextRoundBtn" onclick="proximaRodada()">
-                ▶️ PRÓXIMA RODADA
+                Próxima rodada →
             </button>
 
         </div>
@@ -771,7 +773,7 @@
             <p id="finalMessage" class="final-message"></p>
 
             <button class="reset-btn" onclick="voltarAoMenu()">
-                🔄 JOGAR NOVAMENTE
+                Jogar novamente
             </button>
 
             <div class="ranking-tabs" id="finalRankingTabs"></div>
@@ -795,7 +797,7 @@
 <div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
     <div class="modal-container ranking-modal-container">
         <span class="modal-close" onclick="fecharRanking()">&times;</span>
-        <h2 style="color:#1e3c3f;text-align:center;">🏆 Ranking</h2>
+        <h2 style="color:#1e3c3f;text-align:center;">Ranking</h2>
         <div class="ranking-tabs" id="rankingModalTabs"></div>
         <div class="ranking-table-wrap" id="rankingModalTable"></div>
     </div>
@@ -896,7 +898,7 @@
     function alternarSom() {
         soundEnabled = !soundEnabled;
         localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
-        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
         if (!soundEnabled) {
             pararSomTempoPassando();
         } else {
@@ -1240,7 +1242,7 @@
         return response.json();
     }
 
-    const NOMES_DIFICULDADE = { FACIL: '🟢 Fácil', MEDIO: '🟠 Médio', DIFICIL: '🔴 Difícil' };
+    const NOMES_DIFICULDADE = { FACIL: 'Fácil', MEDIO: 'Médio', DIFICIL: 'Difícil' };
 
     function criarTabsRanking(containerTabs, containerTabela, dificuldadeInicial, destaque) {
         containerTabs.innerHTML = '';
@@ -1332,7 +1334,7 @@
     }
 
     window.onload = function() {
-        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
 
         document.getElementById('playerName').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {

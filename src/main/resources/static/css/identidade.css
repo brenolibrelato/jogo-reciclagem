@@ -1,0 +1,76 @@
+/* Identidade visual: oficina de reciclagem. A cor das lixeiras segue o código de materiais. */
+:root{--papel:#f5f1e7;--claro:#fffdf7;--tinta:#20332b;--suave:#54645a;--linha:#c9d0c1;--verde:#295b43;--laranja:#d37845}
+html{background:var(--papel)}
+body{background:var(--papel)!important;color:var(--tinta);padding:24px!important}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;background-image:radial-gradient(#b1ad99 0.65px,transparent .65px);background-size:9px 9px}
+body,button,input,a{font-family:Trebuchet MS,Arial,sans-serif!important}
+button,a,input{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--laranja)!important;outline-offset:3px}
+.hub-container,.game-container{position:relative;background:var(--claro)!important;border:1px solid var(--linha);border-radius:8px!important;box-shadow:10px 10px 0 #d8decf!important;max-height:none!important;overflow:visible!important}
+.hub-container{max-width:1040px!important;padding:56px!important}
+.game-container{padding:32px!important}
+h1,h2,h3{font-family:Georgia,serif!important;letter-spacing:-.035em;color:var(--tinta)}
+.hub-header{text-align:left!important;max-width:720px;margin-bottom:42px!important}
+.hub-header::before,.start-menu::before,.tela-inicio::before{content:"CADERNO DE CAMPO  /  01";display:block;color:var(--verde);font:700 12px Trebuchet MS,Arial,sans-serif;letter-spacing:.2em;margin-bottom:18px}
+.hub-header h1{font-size:clamp(38px,6vw,72px)!important;line-height:1.02;text-shadow:none!important;margin-bottom:18px!important}
+.hub-header p{margin:0!important;color:var(--suave)!important;font-size:18px!important}
+.jogos-grid{gap:18px!important}
+.jogo-card{align-items:flex-start!important;text-align:left!important;background:var(--papel)!important;border:1px solid var(--linha)!important;border-radius:5px!important;box-shadow:none!important;padding:28px!important;overflow:hidden}
+.jogo-card:hover{transform:translateY(-3px)!important;box-shadow:5px 5px 0 var(--linha)!important;border-color:var(--verde)!important}
+.jogo-card::before{content:attr(data-num);font:700 12px Trebuchet MS,Arial,sans-serif;letter-spacing:.16em;color:var(--suave);margin-bottom:18px}
+.jogo-card-icone{display:block;width:100%;height:145px;margin:0 0 26px!important;background-color:#d8e1d2;background-position:center;background-repeat:no-repeat;background-size:contain;border:1px solid var(--linha);font-size:0!important}
+.jogo-card:first-child .jogo-card-icone{background-image:url('../images/lixeiras/Papel.jpeg')}
+.jogo-card:nth-child(2) .jogo-card-icone{background-image:url('../images/lixeiras/Plástico.jpeg');background-color:#ead7c2}
+.jogo-card h2{font-size:29px!important;margin-bottom:12px!important}
+.jogo-card p{color:var(--suave)!important;font-size:15px!important;line-height:1.6!important}
+.jogo-card-badge{top:16px!important;right:16px!important;background:var(--laranja)!important;border-radius:2px!important;box-shadow:none!important}
+.jogar-btn,.menu-btn,.btn-primario,.btn-secundario,.reset-btn,.next-round-btn{background:var(--verde)!important;color:#fff!important;border:1px solid var(--verde)!important;border-radius:4px!important;box-shadow:none!important;text-transform:none!important;letter-spacing:.02em;font-weight:700!important;transition:background .2s,transform .2s!important}
+.jogar-btn:hover,.menu-btn:hover,.btn-primario:hover,.btn-secundario:hover,.reset-btn:hover,.next-round-btn:hover{background:#193b2b!important;transform:translateY(-2px)!important}
+.jogar-btn::after{content:'↗';margin-left:12px;font-size:20px}
+.hub-footer{color:var(--suave)!important;text-align:left!important;border-top:1px solid var(--linha);padding-top:20px}
+.start-menu,.tela-inicio{text-align:left!important;padding:56px 16px 24px!important}
+.start-menu::before,.tela-inicio::before{content:"OFICINA DE RECICLAGEM  /  JOGAR"}
+.start-menu h1,.tela-inicio h1{font-size:clamp(34px,5vw,54px)!important;line-height:1.05;color:var(--tinta)!important;text-shadow:none!important;margin-bottom:20px!important}
+.subtitulo,.start-menu p{color:var(--suave)!important;line-height:1.6}
+.name-input{background:#fff!important;border:1px solid #9daa9b!important;border-radius:4px!important;box-shadow:none!important;color:var(--tinta)!important;max-width:100%;text-align:left!important}
+.name-input::placeholder{color:#65766a}
+.dificuldade-section{background:var(--papel)!important;border:1px solid var(--linha)!important;border-radius:4px!important;box-shadow:none!important;text-align:left!important}
+.dificuldade-label{color:var(--tinta)!important}
+.dificuldade-btn{background:var(--claro)!important;color:var(--tinta)!important;border:1px solid var(--linha)!important;border-radius:4px!important;box-shadow:none!important}
+.dificuldade-btn.active{background:#e0ebdd!important;border:2px solid var(--verde)!important;color:var(--tinta)!important}
+.dificuldade-btn span{color:var(--suave)!important}
+.ranking-btn,.tutorial-btn,.btn-ranking,.btn-secundario{background:transparent!important;color:var(--verde)!important}
+.ranking-btn:hover,.tutorial-btn:hover,.btn-ranking:hover,.btn-secundario:hover{color:#fff!important}
+.sound-btn,.icon-btn,.manual-btn,.btn-pausar{background:var(--papel)!important;color:var(--tinta)!important;border:1px solid var(--linha)!important;border-radius:4px!important;box-shadow:none!important}
+.header,.hud{background:var(--tinta)!important;border-radius:4px!important;gap:8px}
+.round-info,.score-info,.attempts-info,.timer-info,.hud-pill{border-radius:3px!important;box-shadow:none!important}
+.lixeira-section,.itens-section,.item-card,.item-option,.message-area,.final-score,.ranking-table-wrap{border-radius:4px!important;box-shadow:none!important}
+.lixeira-section{background:#e5eadf!important;border:1px solid var(--linha)}
+.lixeira-title,.itens-section h3{color:var(--tinta)!important}
+.modal-container{background:var(--claro)!important;border-radius:6px!important;box-shadow:8px 8px 0 #87958a!important}
+.ranking-tabs button,.nav-tab{border-radius:3px!important}
+.instrucoes-lista{background:var(--papel)!important;color:var(--tinta)!important;border:1px solid var(--linha);border-radius:4px!important}
+.area-jogo{border-radius:4px!important}
+#finalScoreDisplay,.pontuacao-final{color:var(--verde)!important}
+@media(max-width:700px){body{padding:12px!important}.hub-container{padding:28px 22px!important}.game-container{padding:18px!important}.jogos-grid{grid-template-columns:1fr!important}.jogo-card-icone{height:120px}.header,.hud{flex-wrap:wrap}.start-menu,.tela-inicio{padding-top:60px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+/* Manual: mesma linguagem editorial, com cores funcionais das categorias. */
+.manual-root{background:var(--claro)!important;color:var(--tinta)!important}
+.hero{background:var(--tinta)!important;text-align:left!important;padding:48px clamp(20px,5vw,60px)!important}
+.hero::before,.hero::after{display:none!important}
+.hero-badge{background:transparent!important;border:1px solid #9ab8a4;border-radius:3px!important;letter-spacing:.14em!important}
+.hero h1{font:700 clamp(32px,5vw,54px) Georgia,serif!important;letter-spacing:-.04em}
+.hero p{color:#e3ebdf!important}
+.hero-icons{justify-content:flex-start!important}
+.bin-pill{border-radius:3px!important}
+.nav-tabs{background:var(--papel)!important;border-bottom:1px solid var(--linha);padding:10px 20px!important}
+.nav-tab{background:transparent!important;color:var(--tinta)!important;border-radius:3px!important}
+.nav-tab.active{background:var(--verde)!important;color:white!important}
+.step-card,.drag-demo,.score-card,.result-card,.bin-card{border-radius:4px!important;box-shadow:none!important}
+.section-title{font-family:Georgia,serif!important;color:var(--tinta)!important}
+.field-label{display:block;font-weight:700;color:var(--tinta);margin:18px 0 7px;text-align:left}
+#soundToggleBtn{font-size:0!important;min-width:42px}
+#soundToggleBtn::after{content:'SOM';font:700 11px Trebuchet MS,Arial,sans-serif;letter-spacing:.05em}
+.home-btn{font-size:12px!important;font-weight:700!important;min-width:48px;width:auto!important;padding:0 8px!important}
+
+#soundToggleBtn[aria-pressed="false"]::after{content:"MUDO"}

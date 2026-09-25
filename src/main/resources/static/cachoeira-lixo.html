@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌧️♻️ Cachoeira de Lixo</title>
+    <title>Cachoeira de Lixo</title>
 
     <style>
 
@@ -631,33 +631,35 @@
         }
 
     </style>
+    <link rel="stylesheet" href="css/identidade.css">
 </head>
 
 <body>
 
 <div class="game-container">
 
-    <button class="icon-btn" id="soundToggleBtn" onclick="alternarSom()" title="Ativar/desativar som">🔊</button>
-    <a class="icon-btn home-btn" href="index.html" title="Voltar ao menu de jogos">🏠</a>
+    <button class="icon-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som</button>
+    <a class="icon-btn home-btn" href="index.html" title="Voltar ao menu de jogos">Início</a>
 
     <!-- Tela inicial -->
     <div id="telaInicio" class="tela-inicio">
-        <h1>🌧️♻️ Cachoeira de Lixo</h1>
+        <h1>Cachoeira de Lixo</h1>
         <p class="subtitulo">Resíduos caem do céu! Mova a lixeira e capture só o que combina com a categoria certa.</p>
 
+        <label for="nomeJogadorInput" class="field-label">Seu nome</label>
         <input type="text" id="nomeJogadorInput" class="name-input" placeholder="Digite seu nome..." maxlength="20">
 
         <div class="dificuldade-section">
             <div class="dificuldade-label">Escolha a dificuldade:</div>
             <div class="dificuldade-buttons">
                 <button class="dificuldade-btn active" data-dificuldade="FACIL" onclick="selecionarDificuldade('FACIL', this)">
-                    🟢 Fácil<span>queda lenta</span>
+                    Fácil<span>queda lenta</span>
                 </button>
                 <button class="dificuldade-btn" data-dificuldade="MEDIO" onclick="selecionarDificuldade('MEDIO', this)">
-                    🟠 Médio<span>queda média</span>
+                    Médio<span>queda média</span>
                 </button>
                 <button class="dificuldade-btn" data-dificuldade="DIFICIL" onclick="selecionarDificuldade('DIFICIL', this)">
-                    🔴 Difícil<span>queda rápida</span>
+                    Difícil<span>queda rápida</span>
                 </button>
             </div>
         </div>
@@ -670,8 +672,8 @@
         </ul>
 
         <div class="menu-buttons-inicio">
-            <button class="btn-primario" id="btnJogarInicio">🎮 JOGAR</button>
-            <button class="btn-primario btn-ranking" id="btnAbrirRanking">🏆 RANKING</button>
+            <button class="btn-primario" id="btnJogarInicio">Começar</button>
+            <button class="btn-primario btn-ranking" id="btnAbrirRanking">Ranking</button>
         </div>
     </div>
 
@@ -701,14 +703,14 @@
 
     <!-- Tela final -->
     <div id="telaFim" class="hidden tela-fim">
-        <h2>🏁 Fim de Jogo!</h2>
+        <h2>Fim de jogo</h2>
         <p class="pontuacao-final" id="pontuacaoFinal">0</p>
         <p class="mensagem-final" id="mensagemFinal"></p>
         <p class="dica-final" id="dicaFinal"></p>
 
         <div class="botoes-fim">
-            <button class="btn-primario" id="btnJogarNovamente">🔄 Jogar novamente</button>
-            <a class="btn-secundario" href="index.html">🏠 Voltar ao menu</a>
+            <button class="btn-primario" id="btnJogarNovamente">Jogar novamente</button>
+            <a class="btn-secundario" href="index.html">Voltar ao menu</a>
         </div>
 
         <div class="ranking-tabs" id="finalRankingTabs"></div>
@@ -721,7 +723,7 @@
 <div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
     <div class="modal-container">
         <span class="modal-close" onclick="fecharRanking()">&times;</span>
-        <h2 style="color:#1e3c3f;text-align:center;">🏆 Ranking — Cachoeira de Lixo</h2>
+        <h2 style="color:#1e3c3f;text-align:center;">Ranking — Cachoeira de Lixo</h2>
         <div class="ranking-tabs" id="rankingModalTabs"></div>
         <div class="ranking-table-wrap" id="rankingModalTable"></div>
     </div>
@@ -879,7 +881,7 @@
     function alternarSom() {
         soundEnabled = !soundEnabled;
         localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
-        document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+        document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
         if (!soundEnabled) {
             pararSomTempoPassando();
         } else {
@@ -982,7 +984,7 @@
 
         dadosProntos = true;
         btnJogarInicio.disabled = false;
-        btnJogarInicio.textContent = '🎮 JOGAR';
+        btnJogarInicio.textContent = 'Começar';
     });
 
     // ===== Funcoes principais do jogo =====
@@ -1454,7 +1456,7 @@
         return response.json();
     }
 
-    const NOMES_DIFICULDADE = { FACIL: '🟢 Fácil', MEDIO: '🟠 Médio', DIFICIL: '🔴 Difícil' };
+    const NOMES_DIFICULDADE = { FACIL: 'Fácil', MEDIO: 'Médio', DIFICIL: 'Difícil' };
 
     function criarTabsRanking(containerTabs, containerTabela, dificuldadeInicial, destaque) {
         containerTabs.innerHTML = '';
@@ -1553,7 +1555,7 @@
         if (e.key === 'Enter') btnJogarInicio.click();
     });
 
-    document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
     btnJogarInicio.disabled = true;
     btnJogarInicio.textContent = 'Carregando...';
 
