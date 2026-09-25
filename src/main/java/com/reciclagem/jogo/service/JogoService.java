@@ -176,13 +176,13 @@ public class JogoService {
     private String gerarMensagemFinal(String nomeJogador, int pontuacao) {
         double nota = pontuacao / (double) TOTAL_RODADAS;
         if (nota <= 5) {
-            return "Poxa " + nomeJogador + ", você precisa treinar mais um pouco! ♻️";
+            return "Poxa " + nomeJogador + ", você precisa treinar mais um pouco!";
         } else if (nota <= 7) {
-            return "Muito bem, " + nomeJogador + "! Você foi ok e já sabe bastante! 👍";
+            return "Muito bem, " + nomeJogador + "! Você foi ok e já sabe bastante!";
         } else if (nota <= 9) {
-            return "Parabéns, " + nomeJogador + "! Você foi ótimo e é um craque da reciclagem! 🌟";
+            return "Parabéns, " + nomeJogador + "! Você foi ótimo e é um craque da reciclagem!";
         }
-        return "Incrível, " + nomeJogador + "! Você fez a pontuação perfeita! Você é um mestre ambiental! 🏆";
+        return "Incrível, " + nomeJogador + "! Você fez a pontuação perfeita! Você é um mestre ambiental!";
     }
 
     private List<Item> criarItens() {

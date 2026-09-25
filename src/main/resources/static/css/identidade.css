@@ -69,8 +69,58 @@ h1,h2,h3{font-family:Georgia,serif!important;letter-spacing:-.035em;color:var(--
 .step-card,.drag-demo,.score-card,.result-card,.bin-card{border-radius:4px!important;box-shadow:none!important}
 .section-title{font-family:Georgia,serif!important;color:var(--tinta)!important}
 .field-label{display:block;font-weight:700;color:var(--tinta);margin:18px 0 7px;text-align:left}
-#soundToggleBtn{font-size:0!important;min-width:42px}
-#soundToggleBtn::after{content:'SOM';font:700 11px Trebuchet MS,Arial,sans-serif;letter-spacing:.05em}
 .home-btn{font-size:12px!important;font-weight:700!important;min-width:48px;width:auto!important;padding:0 8px!important}
 
-#soundToggleBtn[aria-pressed="false"]::after{content:"MUDO"}
+
+/* Shared controls stay in normal flow in menus, games and results. */
+*{box-sizing:border-box}
+body{align-items:flex-start}
+.game-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--linha)}
+.game-toolbar .sound-btn,.game-toolbar .icon-btn,.toolbar-help{position:static!important;inset:auto!important;width:auto!important;min-height:44px;height:auto;padding:10px 14px!important;font-size:13px!important;line-height:1.3;border:1px solid var(--linha);border-radius:4px;background:var(--papel);color:var(--tinta);box-shadow:none;cursor:pointer;text-decoration:none}
+.game-toolbar .home-btn{order:-1}.toolbar-help{margin-left:auto}
+.start-menu,.tela-inicio{padding:8px 0 24px!important}
+.game-container{margin:auto}.hub-container{margin:auto}
+.name-input,.dificuldade-section,.menu-buttons,.menu-buttons-inicio{max-width:420px!important;margin-left:0!important;margin-right:0!important}
+.dificuldade-section{padding:16px}.dificuldade-buttons{gap:8px}.dificuldade-btn{min-height:56px}
+.header,.hud{padding:12px!important;flex-wrap:wrap}
+.round-info,.score-info,.attempts-info,.timer-info,.hud-pill{background:transparent!important;color:var(--claro)!important;padding:6px 8px!important;font-size:14px!important}
+.timer-warning,.hud-tempo.warning{background:#87521f!important}.timer-danger,.hud-tempo.danger{background:#9c3026!important}
+.lixeira-card{background:transparent!important}.item-card{border:1px solid var(--linha)!important;background:var(--claro)}
+.final-score,.tela-fim{background:var(--papel)!important;border:1px solid var(--linha);padding:24px!important;border-radius:4px}
+.final-message,.final-time-display,.mensagem-final,.dica-final{color:var(--suave)!important}
+.final-score h2,.tela-fim h2{color:var(--tinta)!important;text-shadow:none}
+.ranking-tab-btn{background:var(--papel)!important;color:var(--tinta)!important;border:1px solid var(--linha)!important;min-height:40px}
+.ranking-tab-btn.active{background:var(--verde)!important;color:white!important}
+.ranking-table th{background:var(--papel)!important}.ranking-table th,.ranking-table td{color:var(--tinta)!important;border-color:var(--linha)!important}
+.ranking-table tr.ranking-destaque{background:#e0ebdd!important}
+.modal-container{padding-top:58px!important}.modal-close{border:1px solid var(--linha);background:var(--papel)!important;color:var(--tinta)!important;border-radius:4px!important;box-shadow:none!important;width:40px;height:40px}
+.modal-iframe{width:100%;height:65vh!important;border:0;display:block}
+.btn-pausar{min-width:72px;min-height:40px;font-size:13px!important}
+.overlay-pausa{background:rgba(32,51,43,.94)!important}.overlay-pausa h2{color:var(--claro)!important}
+.area-jogo{background:#e7eddf!important;border-color:var(--linha)!important}
+.aviso-categoria{background:var(--tinta)!important;color:white!important;border-radius:4px!important}
+.instrucoes-lista{list-style:decimal!important;padding-left:36px!important}
+.manual-page{padding:0!important;display:block}.manual-page::before{display:none}
+.manual-root,.manual-root *{font-family:Trebuchet MS,Arial,sans-serif!important}
+.hero h1{font-family:Georgia,serif!important;color:var(--claro)!important}
+.section{padding:28px!important}.section-sub,.step-text p,.score-sub,.result-text p{color:var(--suave)!important}
+.step-card,.score-card,.result-card,.drag-demo{background:var(--papel)!important;border:1px solid var(--linha)!important;border-radius:4px!important}
+.step-num{background:var(--verde)!important;border-radius:4px!important;flex-shrink:0}
+.tip-box{background:#e0ebdd!important;border-left:3px solid var(--verde);border-radius:4px!important}
+.tip-text,.mini-header,.score-val{color:var(--tinta)!important}
+.score-sub{font-size:13px!important}.drag-item-demo{background:var(--claro)!important;border:1px solid var(--linha)!important;border-radius:4px!important;box-shadow:none!important}
+.bin-image{width:88px;height:88px;object-fit:contain;display:block;margin:0 auto 12px}
+.lixeira-demo{border-radius:4px!important}.nav-tabs{flex-wrap:wrap;gap:6px}.nav-tab{min-height:44px}
+button:disabled{opacity:.55;cursor:wait}
+@media(max-width:700px){.start-menu,.tela-inicio{padding-top:0!important}.game-toolbar{margin-bottom:18px}.toolbar-help{margin-left:0}.game-container{box-shadow:4px 4px 0 #d8decf!important}.lixeira-icon img{width:180px;height:180px}.itens-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.item-nome{font-size:14px}.botoes-fim{flex-wrap:wrap}.section{padding:18px!important}.score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:28px 18px!important}.modal-container{width:96%!important;padding-left:10px!important;padding-right:10px!important}.hud-pill{font-size:12px!important}}
+
+.hud-categoria{background:#fffdf7!important;color:var(--tinta)!important}
+.hud-tempo.critico{background:#9c3026!important}
+.ranking-vazio{color:var(--suave)!important}
+#lixeiraJogador{border-radius:4px!important;color:#fff;box-shadow:none!important}
+#lixeiraJogador .lixeira-jogador-nome{background:var(--claro);color:var(--tinta);border-radius:2px;padding:2px 6px}
+.residuo-caindo,.dica-final,.overlay-pausa{border-radius:4px!important;box-shadow:none!important}
+.residuo-caindo{border:1px solid var(--linha)!important}
+.section-title{font-family:Georgia,serif!important}
+.manual-nav{display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;background:var(--papel);border-bottom:1px solid var(--linha)}
+.manual-nav a{color:var(--verde);font-size:13px;font-weight:700;min-height:24px;display:inline-flex;align-items:center}

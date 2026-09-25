@@ -672,15 +672,18 @@
         }
 
     </style>
-    <link rel="stylesheet" href="css/identidade.css">
+    <link rel="stylesheet" href="/css/identidade.css?v=20260925-2">
 </head>
 
 <body>
 
 <div class="game-container">
 
-    <button class="sound-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som</button>
-    <a class="sound-btn home-btn" href="index.html" title="Voltar ao menu de jogos">Início</a>
+    <nav class="game-toolbar" aria-label="Navegação do jogo">
+    <button class="sound-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som ligado</button>
+    <a class="sound-btn home-btn" href="/?v=20260925-2" title="Voltar ao menu de jogos">Início</a>
+    <button class="toolbar-help" onclick="abrirTutorial()">Como jogar</button>
+    </nav>
 
     <!-- Menu Inicial -->
     <div id="startMenu" class="start-menu">
@@ -719,14 +722,10 @@
     <!-- Conteúdo do Jogo -->
     <div id="gameContent" class="hidden">
 
-        <button class="manual-btn" onclick="abrirTutorial()" title="Abrir manual do jogo">
-            ?
-        </button>
-
-        <div class="header">
+<div class="header">
             <div class="round-info" id="roundDisplay">Rodada 1/10</div>
             <div class="score-info" id="scoreDisplay">0 Pontos</div>
-            <div class="timer-info" id="timerDisplay">⏱️ 30s</div>
+            <div class="timer-info" id="timerDisplay">Tempo: 30s</div>
             <div class="attempts-info" id="attemptsDisplay">1ª tentativa: 10 pontos</div>
         </div>
 
@@ -788,15 +787,15 @@
 <!-- Modal de Tutorial -->
 <div id="tutorialModal" class="modal-overlay" onclick="fecharTutorialFora(event)">
     <div class="modal-container">
-        <span class="modal-close" onclick="fecharTutorial()">&times;</span>
-        <iframe src="manual_jogo_reciclagem.html" class="modal-iframe"></iframe>
+        <button class="modal-close" aria-label="Fechar manual" onclick="fecharTutorial()">×</button>
+        <iframe src="/manual_jogo_reciclagem.html?v=20260925-2" title="Manual de separação de materiais" class="modal-iframe"></iframe>
     </div>
 </div>
 
 <!-- Modal de Ranking -->
 <div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
     <div class="modal-container ranking-modal-container">
-        <span class="modal-close" onclick="fecharRanking()">&times;</span>
+        <button class="modal-close" aria-label="Fechar ranking" onclick="fecharRanking()">×</button>
         <h2 style="color:#1e3c3f;text-align:center;">Ranking</h2>
         <div class="ranking-tabs" id="rankingModalTabs"></div>
         <div class="ranking-table-wrap" id="rankingModalTable"></div>
@@ -899,6 +898,7 @@
         soundEnabled = !soundEnabled;
         localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
         document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? 'Som ligado' : 'Som desligado';
         if (!soundEnabled) {
             pararSomTempoPassando();
         } else {
@@ -1057,7 +1057,7 @@
                 tocarAnimacao(lixeiraCard, 'lixeira-success');
                 messageArea.classList.remove('message-erro');
                 messageArea.classList.add('message-sucesso');
-                messageArea.innerHTML = "🎉 ACERTOU!";
+                messageArea.innerHTML = " ACERTOU!";
                 tocarAnimacao(messageArea, 'message-pop');
 
                 if (resultado.jogoFinalizado) {
@@ -1071,7 +1071,7 @@
                 atualizarTentativas(resultado.tentativaAtual, resultado.pontosProximaTentativa);
                 messageArea.classList.remove('message-sucesso');
                 messageArea.classList.add('message-erro');
-                messageArea.innerHTML = "❌ ERROU!";
+                messageArea.innerHTML = " ERROU!";
                 tocarAnimacao(messageArea, 'message-pop');
             }
         } catch (error) {
@@ -1102,7 +1102,7 @@
         const restanteMs = timerDeadline - Date.now();
         const restanteSeg = Math.max(0, Math.ceil(restanteMs / 1000));
 
-        timerDisplay.textContent = `⏱️ ${restanteSeg}s`;
+        timerDisplay.textContent = `Tempo: ${restanteSeg}s`;
         timerDisplay.classList.remove('timer-warning', 'timer-danger');
         lixeiraSection.classList.remove('tempo-critico');
         itensGrid.classList.remove('tempo-critico');
@@ -1132,7 +1132,7 @@
         tocarAnimacao(lixeiraCard, 'lixeira-shake');
         messageArea.classList.remove('message-sucesso');
         messageArea.classList.add('message-erro');
-        messageArea.innerHTML = "⏰ TEMPO ESGOTADO!";
+        messageArea.innerHTML = " TEMPO ESGOTADO!";
         tocarAnimacao(messageArea, 'message-pop');
         nextRoundBtn.style.display = "none";
 
@@ -1199,7 +1199,7 @@
 
         finalScoreDisplay.textContent=pontuacaoAtual + " Pontos";
 
-        document.getElementById('finalTimeDisplay').textContent = `⏱️ Tempo total: ${(tempoTotalMs / 1000).toFixed(1)}s`;
+        document.getElementById('finalTimeDisplay').textContent = ` Tempo total: ${(tempoTotalMs / 1000).toFixed(1)}s`;
 
         document.getElementById('finalMessage').textContent = mensagemFinal;
 
@@ -1335,6 +1335,7 @@
 
     window.onload = function() {
         document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? 'Som ligado' : 'Som desligado';
 
         document.getElementById('playerName').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {

@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manual do Jogo de Reciclagem</title>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap');
+  <style>700;800;900&family=Fredoka+One&display=swap');
 
     html, body {
       margin: 0;
@@ -482,11 +481,15 @@
       margin: 20px 0 10px;
     }
   </style>
-    <link rel="stylesheet" href="css/identidade.css">
+    <link rel="stylesheet" href="/css/identidade.css?v=20260925-2">
 </head>
 
-<body>
+<body class="manual-page">
 <div class="manual-root">
+  <nav class="manual-nav" aria-label="Navegação do manual">
+    <a href="/?v=20260925-2" target="_top">Início</a>
+    <a href="/jogo-reciclagem.html?v=20260925-2" target="_top">Separação de Materiais</a>
+  </nav>
   <div class="hero">
     <div class="hero-badge">GUIA DE CAMPO / JOGO 01</div>
     <h1>Jogo de Reciclagem</h1>
@@ -548,10 +551,10 @@
     </div>
 
     <div class="drag-demo">
-      <div class="drag-item-demo">📰 Jornal</div>
+      <div class="drag-item-demo"> Jornal</div>
       <div class="arrow-demo">↓</div>
       <div class="lixeira-demo">
-        <span style="font-size:28px; margin-bottom:4px">🗑️</span>
+        <img class="bin-image" src="/images/lixeiras/Papel.jpeg" alt="">
         Lixeira Azul — Papel
       </div>
     </div>
@@ -573,7 +576,7 @@
     </div>
 
     <div class="tip-box">
-      <div class="tip-icon">💡</div>
+
       <div class="tip-text">
         <strong>Dica:</strong> Quanto mais rápido você acertar na 1ª tentativa, mais pontos você ganha! Preste atenção à cor da lixeira — ela diz tudo!
       </div>
@@ -588,25 +591,25 @@
       <div class="score-card">
         <div class="score-val" style="color:#e6a800">10</div>
         <div class="score-label">pontos</div>
-        <div class="score-sub">1ª tentativa 🥇</div>
+        <div class="score-sub">1ª tentativa </div>
       </div>
 
       <div class="score-card">
         <div class="score-val" style="color:#7a8a8b">5</div>
         <div class="score-label">pontos</div>
-        <div class="score-sub">2ª tentativa 🥈</div>
+        <div class="score-sub">2ª tentativa </div>
       </div>
 
       <div class="score-card">
         <div class="score-val" style="color:#a06030">2</div>
         <div class="score-label">pontos</div>
-        <div class="score-sub">3ª tentativa 🥉</div>
+        <div class="score-sub">3ª tentativa </div>
       </div>
 
       <div class="score-card">
         <div class="score-val" style="color:#cc3333">0</div>
         <div class="score-label">pontos</div>
-        <div class="score-sub">4ª tentativa 😬</div>
+        <div class="score-sub">4ª tentativa </div>
       </div>
     </div>
 
@@ -619,7 +622,7 @@
     </div>
 
     <div class="tip-box" style="margin-top: 16px">
-      <div class="tip-icon">🎯</div>
+
       <div class="tip-text">
         <strong>Desafio:</strong> Tente fazer 100 pontos acertando tudo na primeira tentativa! Isso significa que você já sabe de cor como reciclar!
       </div>
@@ -628,7 +631,7 @@
     <div class="mini-header">Durante o jogo, você vê</div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🟠</div>
+
       <div class="step-text">
         <h3>Rodada X/10</h3>
         <p>Mostra em qual rodada você está e quantas ainda faltam.</p>
@@ -636,7 +639,7 @@
     </div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🔴</div>
+
       <div class="step-text">
         <h3>Seus pontos</h3>
         <p>Aparece no centro do cabeçalho e vai aumentando a cada acerto!</p>
@@ -644,7 +647,7 @@
     </div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🔵</div>
+
       <div class="step-text">
         <h3>Tentativa atual</h3>
         <p>Mostra quantos pontos você ainda pode ganhar nessa rodada.</p>
@@ -658,38 +661,38 @@
 
     <div class="bin-grid">
       <div class="bin-card bin-azul">
-        <div class="bin-emoji">📦</div>
+        <img class="bin-image" src="/images/lixeiras/Papel.jpeg" alt="">
         <div class="bin-name">Azul — Papel</div>
         <div class="bin-items">Jornal • Papelão • Revista • Rolo de papel higiênico • Caixa de leite</div>
       </div>
 
       <div class="bin-card bin-vermelho">
-        <div class="bin-emoji">🧴</div>
+        <img class="bin-image" src="/images/lixeiras/Plástico.jpeg" alt="">
         <div class="bin-name">Vermelho — Plástico</div>
         <div class="bin-items">Garrafa PET • Sacola • Copo descartável • Pote de iogurte • Tampa</div>
       </div>
 
       <div class="bin-card bin-amarelo">
-        <div class="bin-emoji">🥫</div>
+        <img class="bin-image" src="/images/lixeiras/Metal.jpeg" alt="">
         <div class="bin-name">Amarelo — Metal</div>
         <div class="bin-items">Lata de refrigerante • Lata de atum • Papel alumínio • Fio de cobre • Tampa de metal</div>
       </div>
 
       <div class="bin-card bin-verde">
-        <div class="bin-emoji">🍾</div>
+        <img class="bin-image" src="/images/lixeiras/Vidro.jpeg" alt="">
         <div class="bin-name">Verde — Vidro</div>
         <div class="bin-items">Garrafa de vidro • Pote de vidro • Jarra de vidro • Pote de geleia</div>
       </div>
 
       <div class="bin-card bin-marrom">
-        <div class="bin-emoji">🍌</div>
+        <img class="bin-image" src="/images/lixeiras/Orgânico.jpeg" alt="">
         <div class="bin-name">Marrom — Orgânico</div>
         <div class="bin-items">Casca de banana • Casca de laranja • Casca de ovo • Resto de comida • Saquinho de chá</div>
       </div>
     </div>
 
     <div class="tip-box">
-      <div class="tip-icon">🌍</div>
+
       <div class="tip-text">
         <strong>Por que reciclar?</strong> Quando separamos o lixo corretamente, materiais como papel, plástico e metal podem virar coisas novas — economizando energia e protegendo o planeta!
       </div>
@@ -698,7 +701,7 @@
     <div class="mini-header">Macete para lembrar</div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🧠</div>
+
       <div class="step-text">
         <h3>Pense no material, não no objeto</h3>
         <p>Uma <em>caixa de leite</em> parece papel, mas é papel mesmo! Uma <em>jarra de vidro</em> é vidro. Pergunte-se: do que esse objeto é feito?</p>
@@ -711,7 +714,7 @@
     <div class="section-sub">Veja o que sua pontuação final significa:</div>
 
     <div class="result-card" style="border-color: #e6a800">
-      <div class="result-icon">🏆</div>
+
       <div class="result-text">
         <h4 style="color:#a07000">80 a 100 pontos — Mestre da Reciclagem!</h4>
         <p>Incrível! Você sabe muito bem como separar o lixo. Continue assim e ensine os amigos!</p>
@@ -719,7 +722,7 @@
     </div>
 
     <div class="result-card" style="border-color: #4caf84">
-      <div class="result-icon">😄</div>
+
       <div class="result-text">
         <h4 style="color:#1e8a2d">50 a 79 pontos — Reciclador em evolução!</h4>
         <p>Muito bom! Você está no caminho certo. Revise as dicas e tente de novo!</p>
@@ -727,7 +730,7 @@
     </div>
 
     <div class="result-card" style="border-color: #5b8dd9">
-      <div class="result-icon">📚</div>
+
       <div class="result-text">
         <h4 style="color:#2a5db0">1 a 49 pontos — Aprendiz da Reciclagem!</h4>
         <p>Não desanime! Olhe as dicas das lixeiras e jogue de novo. Você vai melhorar!</p>
@@ -737,7 +740,7 @@
     <div class="mini-header">O que fazer depois?</div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🔄</div>
+
       <div class="step-text">
         <h3>Jogue novamente</h3>
         <p>Clique em "Jogar Novamente" para uma nova partida com rodadas embaralhadas!</p>
@@ -745,7 +748,7 @@
     </div>
 
     <div class="step-card">
-      <div style="font-size: 22px">🏠</div>
+
       <div class="step-text">
         <h3>Pratique em casa</h3>
         <p>Agora que você aprendeu, ajude sua família a separar o lixo do jeito certo no dia a dia!</p>
@@ -753,7 +756,7 @@
     </div>
 
     <div class="tip-box">
-      <div class="tip-icon">♻️</div>
+
       <div class="tip-text">
         <strong>Lembre-se:</strong> Reciclar não é só um jogo — é um hábito para a vida toda. Cada objeto no lugar certo faz diferença para o nosso planeta!
       </div>

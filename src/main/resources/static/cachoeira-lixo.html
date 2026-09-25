@@ -631,15 +631,18 @@
         }
 
     </style>
-    <link rel="stylesheet" href="css/identidade.css">
+    <link rel="stylesheet" href="/css/identidade.css?v=20260925-2">
 </head>
 
 <body>
 
 <div class="game-container">
 
-    <button class="icon-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som</button>
-    <a class="icon-btn home-btn" href="index.html" title="Voltar ao menu de jogos">Início</a>
+    <nav class="game-toolbar" aria-label="Navegação do jogo">
+    <button class="icon-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som ligado</button>
+    <a class="icon-btn home-btn" href="/?v=20260925-2" title="Voltar ao menu de jogos">Início</a>
+
+    </nav>
 
     <!-- Tela inicial -->
     <div id="telaInicio" class="tela-inicio">
@@ -665,10 +668,10 @@
         </div>
 
         <ul class="instrucoes-lista">
-            <li>🖱️ Mova o mouse (ou arraste o dedo) para controlar a lixeira</li>
-            <li>⌨️ No computador também dá pra usar as setas ← →</li>
-            <li>✅ Capture apenas o resíduo da categoria mostrada na lixeira</li>
-            <li>⏱️ Você tem 60 segundos — a categoria da lixeira muda sozinha!</li>
+            <li> Mova o mouse (ou arraste o dedo) para controlar a lixeira</li>
+            <li> No computador também dá pra usar as setas ← →</li>
+            <li> Capture apenas o resíduo da categoria mostrada na lixeira</li>
+            <li> Você tem 60 segundos — a categoria da lixeira muda sozinha!</li>
         </ul>
 
         <div class="menu-buttons-inicio">
@@ -682,21 +685,21 @@
 
         <div class="hud">
             <div class="hud-pill hud-pontuacao" id="hudPontuacao">0 pontos</div>
-            <div class="hud-pill hud-categoria" id="hudCategoria">♻️ --</div>
-            <div class="hud-pill hud-tempo" id="hudTempo">⏱️ 60s</div>
-            <button class="btn-pausar" id="btnPausar" title="Pausar">⏸️</button>
+            <div class="hud-pill hud-categoria" id="hudCategoria"> --</div>
+            <div class="hud-pill hud-tempo" id="hudTempo">Tempo: 60s</div>
+            <button class="btn-pausar" id="btnPausar" title="Pausar">Pausar</button>
         </div>
 
         <div class="area-jogo" id="areaJogo">
             <div id="lixeiraJogador">
-                <span class="lixeira-jogador-icone">♻️</span>
+                <span class="lixeira-jogador-icone" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></svg></span>
                 <span class="lixeira-jogador-nome">--</span>
             </div>
             <div class="aviso-categoria" id="avisoCategoria"></div>
 
             <div class="overlay-pausa hidden" id="overlayPausa">
-                <h2>⏸️ Pausado</h2>
-                <button class="btn-primario" id="btnContinuar">▶️ Continuar</button>
+                <h2> Pausado</h2>
+                <button class="btn-primario" id="btnContinuar"> Continuar</button>
             </div>
         </div>
     </div>
@@ -710,7 +713,7 @@
 
         <div class="botoes-fim">
             <button class="btn-primario" id="btnJogarNovamente">Jogar novamente</button>
-            <a class="btn-secundario" href="index.html">Voltar ao menu</a>
+            <a class="btn-secundario" href="/?v=20260925-2">Voltar ao menu</a>
         </div>
 
         <div class="ranking-tabs" id="finalRankingTabs"></div>
@@ -722,7 +725,7 @@
 <!-- Modal de Ranking -->
 <div id="rankingModal" class="modal-overlay" onclick="fecharRankingFora(event)">
     <div class="modal-container">
-        <span class="modal-close" onclick="fecharRanking()">&times;</span>
+        <button class="modal-close" aria-label="Fechar ranking" onclick="fecharRanking()">×</button>
         <h2 style="color:#1e3c3f;text-align:center;">Ranking — Cachoeira de Lixo</h2>
         <div class="ranking-tabs" id="rankingModalTabs"></div>
         <div class="ranking-table-wrap" id="rankingModalTable"></div>
@@ -882,6 +885,7 @@
         soundEnabled = !soundEnabled;
         localStorage.setItem('jogoReciclagem_som', soundEnabled ? 'on' : 'off');
         document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? 'Som ligado' : 'Som desligado';
         if (!soundEnabled) {
             pararSomTempoPassando();
         } else {
@@ -1039,7 +1043,7 @@
 
         pontuacaoFinalEl.textContent = estado.pontuacao;
         mensagemFinalEl.textContent = gerarMensagemDesempenho(estado.pontuacao);
-        dicaFinalEl.textContent = '💡 ' + DICAS_EDUCATIVAS[Math.floor(Math.random() * DICAS_EDUCATIVAS.length)];
+        dicaFinalEl.textContent = ' ' + DICAS_EDUCATIVAS[Math.floor(Math.random() * DICAS_EDUCATIVAS.length)];
 
         somFim();
 
@@ -1065,10 +1069,10 @@
     }
 
     function gerarMensagemDesempenho(pontuacao) {
-        if (pontuacao >= 150) return 'Incrível! Você separou muitos resíduos corretamente! 🏆';
-        if (pontuacao >= 90) return 'Parabéns! Você foi ótimo capturando o lixo certo! 🌟';
-        if (pontuacao >= 40) return 'Bom trabalho! Continue praticando a separação correta. 👍';
-        return 'Continue tentando! Separar o lixo corretamente ajuda o planeta. ♻️';
+        if (pontuacao >= 150) return 'Incrível! Você separou muitos resíduos corretamente! ';
+        if (pontuacao >= 90) return 'Parabéns! Você foi ótimo capturando o lixo certo! ';
+        if (pontuacao >= 40) return 'Bom trabalho! Continue praticando a separação correta. ';
+        return 'Continue tentando! Separar o lixo corretamente ajuda o planeta. ';
     }
 
     function limparResiduosVisuais() {
@@ -1148,7 +1152,7 @@
     }
 
     function atualizarHudTempo() {
-        hudTempo.textContent = `⏱️ ${Math.ceil(estado.tempoRestante)}s`;
+        hudTempo.textContent = `Tempo: ${Math.ceil(estado.tempoRestante)}s`;
         const critico = estado.tempoRestante <= 10 && estado.tempoRestante > 0;
         hudTempo.classList.toggle('timer-danger', critico);
         areaJogo.classList.toggle('tempo-critico', critico);
@@ -1390,7 +1394,7 @@
         lixeiraJogadorEl.style.backgroundColor = cor;
         lixeiraJogadorEl.querySelector('.lixeira-jogador-nome').textContent = cat.nome;
 
-        hudCategoria.textContent = `♻️ ${cat.nome}`;
+        hudCategoria.textContent = ` ${cat.nome}`;
         hudCategoria.style.backgroundColor = cor;
 
         if (comAnimacao) {
@@ -1556,6 +1560,7 @@
     });
 
     document.getElementById('soundToggleBtn').setAttribute('aria-pressed', String(soundEnabled));
+        document.getElementById('soundToggleBtn').textContent = soundEnabled ? 'Som ligado' : 'Som desligado';
     btnJogarInicio.disabled = true;
     btnJogarInicio.textContent = 'Carregando...';
 
