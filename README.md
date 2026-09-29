@@ -96,8 +96,3 @@ src/main/resources/static/
 ├── manual_jogo_reciclagem.html   # manual ilustrado
 └── css/  images/  sounds/
 ```
-
-## Autor
-
-**Breno Librelato Manoel**, estudante de Sistemas de Informação no Unibave.
-[Portfólio](https://brenolibrelato.github.io/) · [LinkedIn](https://www.linkedin.com/in/breno-librelato-manoel-b3538435b/)
