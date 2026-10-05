@@ -12,6 +12,8 @@ import com.reciclagem.jogo.model.Item;
 import com.reciclagem.jogo.model.Lixeira;
 import com.reciclagem.jogo.model.RankingEntry;
 import com.reciclagem.jogo.service.JogoService;
+import com.reciclagem.jogo.service.CachoeiraService;
+import jakarta.servlet.http.HttpServletRequest;
 import com.reciclagem.jogo.service.RankingService;
 import com.reciclagem.jogo.service.SessaoNaoEncontradaException;
 import org.springframework.http.HttpStatus;
@@ -33,13 +35,14 @@ import java.util.Map;
 public class JogoApiController {
 
     private static final int NOME_JOGADOR_TAMANHO_MAXIMO = 20;
-    private static final int PONTUACAO_MAXIMA_CACHOEIRA_LIXO = 5000;
-    private static final long TEMPO_MAXIMO_CACHOEIRA_LIXO_MS = 180_000L;
 
     private final JogoService jogoService;
     private final RankingService rankingService;
 
-    public JogoApiController(JogoService jogoService, RankingService rankingService) {
+    private final CachoeiraService cachoeiraService;
+
+    public JogoApiController(JogoService jogoService, RankingService rankingService, CachoeiraService cachoeiraService) {
+        this.cachoeiraService = cachoeiraService;
         this.jogoService = jogoService;
         this.rankingService = rankingService;
     }
@@ -99,25 +102,27 @@ public class JogoApiController {
         return ResponseEntity.ok(mapearRankingPorNomeDificuldade(RankingService.JOGO_CACHOEIRA_LIXO));
     }
 
+    @PostMapping("/cachoeira-lixo/iniciar")
+    public CachoeiraService.State iniciarCachoeira(@RequestBody IniciarJogoRequest request, HttpServletRequest http) {
+        return cachoeiraService.start(http.getSession().getId(), request.getNomeJogador(), request.getDificuldade());
+    }
+
+    public record ComandoCachoeira(String acao, Double binX) {}
+
+    @PostMapping("/cachoeira-lixo/{sessionId}/comando")
+    public CachoeiraService.State comandarCachoeira(@PathVariable String sessionId,
+            @RequestBody ComandoCachoeira request, HttpServletRequest http) {
+        return cachoeiraService.command(donoSessao(http), sessionId, request.acao(), request.binX());
+    }
+
     @PostMapping("/ranking/cachoeira-lixo")
-    public ResponseEntity<List<RankingEntry>> registrarPontuacaoCachoeiraLixo(@RequestBody SubmeterPontuacaoRequest request) {
-        String nomeBruto = request.getNomeJogador();
-        if (nomeBruto == null) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<List<RankingEntry>> registrarPontuacaoCachoeiraLixo(
+            @RequestBody SubmeterPontuacaoRequest request, HttpServletRequest http) {
+        return ResponseEntity.ok(cachoeiraService.finish(donoSessao(http), request.getSessionId()));
+    }
 
-        String nome = nomeBruto.trim().replaceAll("\\p{Cntrl}", "");
-        if (nome.isBlank() || nome.length() > NOME_JOGADOR_TAMANHO_MAXIMO) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Dificuldade dificuldade = Dificuldade.fromTexto(request.getDificuldade());
-        int pontuacao = Math.max(0, Math.min(request.getPontuacao(), PONTUACAO_MAXIMA_CACHOEIRA_LIXO));
-        long tempoTotalMs = Math.max(0, Math.min(request.getTempoTotalMs(), TEMPO_MAXIMO_CACHOEIRA_LIXO_MS));
-
-        List<RankingEntry> ranking = rankingService.registrarPontuacao(
-                RankingService.JOGO_CACHOEIRA_LIXO, dificuldade, nome, pontuacao, tempoTotalMs);
-        return ResponseEntity.ok(ranking);
+    private String donoSessao(HttpServletRequest http) {
+        return http.getSession(false) == null ? null : http.getSession(false).getId();
     }
 
     private Map<String, List<RankingEntry>> mapearRankingPorNomeDificuldade(String jogo) {

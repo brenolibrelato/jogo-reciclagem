@@ -34,10 +34,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String ip = obterIpCliente(request);
+        // Separate budget for 10 Hz controls; starting/finalizing retain the original limit.
+        boolean controle = request.getRequestURI().matches("/api/cachoeira-lixo/[^/]+/comando");
+        String ip = obterIpCliente(request) + (controle ? ":controle" : ":geral");
         Contador contador = contadoresPorIp.computeIfAbsent(ip, chave -> new Contador());
 
-        if (!contador.tentarRegistrar(maxRequisicoes, janelaMs)) {
+        if (!contador.tentarRegistrar(controle ? maxRequisicoes * 15 : maxRequisicoes, janelaMs)) {
             response.setStatus(429);
             response.setContentType("text/plain;charset=UTF-8");
             response.getWriter().write("Muitas requisições. Tente novamente em instantes.");
@@ -54,10 +56,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String obterIpCliente(HttpServletRequest request) {
-        String encaminhado = request.getHeader("X-Forwarded-For");
-        if (encaminhado != null && !encaminhado.isBlank()) {
-            return encaminhado.split(",")[0].trim();
-        }
+        // Forwarded headers are attacker-controlled unless normalized by a trusted proxy.
         return request.getRemoteAddr();
     }
 

@@ -744,14 +744,6 @@
         marrom: '#8d6e46'
     };
 
-    // Cada dificuldade define o ponto de partida da queda; a dificuldade
-    // progressiva (aumentarDificuldade) continua subindo a partir dali.
-    const PRESETS_DIFICULDADE = {
-        FACIL: { velocidadeQueda: 80, intervaloSpawnMs: 1500, tempoParaTrocarCategoria: 24 },
-        MEDIO: { velocidadeQueda: 110, intervaloSpawnMs: 1100, tempoParaTrocarCategoria: 18 },
-        DIFICIL: { velocidadeQueda: 150, intervaloSpawnMs: 800, tempoParaTrocarCategoria: 13 }
-    };
-
     // Copia local dos mesmos dados do backend (com.reciclagem.jogo.service.JogoService),
     // usada apenas se a API estiver indisponivel no momento do carregamento.
     const DADOS_FALLBACK = {
@@ -926,7 +918,6 @@
     const mensagemFinalEl = document.getElementById('mensagemFinal');
     const dicaFinalEl = document.getElementById('dicaFinal');
 
-    const LARGURA_BIN_PX = 110; // precisa bater com a largura de #lixeiraJogador no CSS
 
     // ===== Estado do jogo =====
 
@@ -936,17 +927,9 @@
         duracaoPartida: 60,
         tempoRestante: 60,
         categorias: [],
-        itensPool: [],
         categoriaAtualIndex: 0,
         itensAtivos: [],
         binXPercent: 50,
-        velocidadeQueda: 90, // pixels por segundo
-        intervaloSpawnMs: 1300,
-        acumuladorSpawnMs: 0,
-        tempoParaTrocarCategoria: 20, // segundos
-        tempoDesdeUltimaTroca: 0,
-        tempoDesdeUltimoAumento: 0,
-        nivelDificuldade: 0,
         teclaEsquerda: false,
         teclaDireita: false,
         ultimoTimestamp: null,
@@ -981,7 +964,6 @@
 
     carregarDados().then(async dados => {
         estado.categorias = dados.lixeiras;
-        estado.itensPool = dados.itens;
 
         btnJogarInicio.textContent = 'Carregando imagens...';
         await precarregarImagens(dados.itens, dados.lixeiras);
@@ -993,39 +975,113 @@
 
     // ===== Funcoes principais do jogo =====
 
-    function iniciarPartida() {
-        if (!dadosProntos) return;
+    let partidaId = null;
+    let sincronizacaoTimer = null;
+    let comandoPendente = 'MOVER';
+    let geracaoPartida = 0;
 
+    async function apiPartida(url, body) {
+        const response = await fetch(url, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body), signal: AbortSignal.timeout(5000)
+        });
+        if (!response.ok) throw new Error(`Falha na partida (${response.status})`);
+        return response.json();
+    }
+
+    async function iniciarPartida() {
+        if (!dadosProntos || btnJogarInicio.disabled || btnJogarNovamente.disabled) return;
+        btnJogarInicio.disabled = btnJogarNovamente.disabled = true;
         limparResiduosETimers();
+        const geracao = ++geracaoPartida;
+        try {
+            const snapshot = await apiPartida('/api/cachoeira-lixo/iniciar', {
+                nomeJogador: nomeJogadorAtual, dificuldade: dificuldadeSelecionada
+            });
+            partidaId = snapshot.sessionId;
+            comandoPendente = 'MOVER';
+            estado.binXPercent = 50;
+            estado.pontuacao = 0;
+            telaInicio.classList.add('hidden');
+            telaFim.classList.add('hidden');
+            telaJogo.classList.remove('hidden');
+            aplicarEstadoServidor(snapshot);
+            renderizarBin();
+            somComeco();
+            estado.ultimoTimestamp = null;
+            estado.rafId = requestAnimationFrame(loopJogo);
+            sincronizacaoTimer = setTimeout(() => sincronizarPartida(geracao), 100);
+        } catch (erro) {
+            alert('Não foi possível iniciar a partida. Verifique sua conexão e tente novamente.');
+        } finally {
+            btnJogarInicio.disabled = btnJogarNovamente.disabled = false;
+        }
+    }
 
-        const preset = PRESETS_DIFICULDADE[dificuldadeSelecionada] || PRESETS_DIFICULDADE.FACIL;
+    async function sincronizarPartida(geracao) {
+        const acao = comandoPendente;
+        comandoPendente = 'MOVER';
+        try {
+            const snapshot = await apiPartida(`/api/cachoeira-lixo/${partidaId}/comando`, {
+                acao, binX: estado.binXPercent
+            });
+            if (geracao !== geracaoPartida) return;
+            aplicarEstadoServidor(snapshot);
+            if (snapshot.status === 'fim') {
+                await finalizarPartida();
+                return;
+            }
+            sincronizacaoTimer = setTimeout(() => sincronizarPartida(geracao), 100);
+        } catch (erro) {
+            if (geracao !== geracaoPartida) return;
+            voltarAoMenuInicioJogo();
+            alert('A conexão com a partida foi interrompida. O resultado não foi registrado. Inicie uma nova partida.');
+        }
+    }
 
-        estado.status = 'jogando';
-        estado.pontuacao = 0;
-        estado.tempoRestante = estado.duracaoPartida;
-        estado.velocidadeQueda = preset.velocidadeQueda;
-        estado.intervaloSpawnMs = preset.intervaloSpawnMs;
-        estado.acumuladorSpawnMs = 0;
-        estado.tempoParaTrocarCategoria = preset.tempoParaTrocarCategoria;
-        estado.tempoDesdeUltimaTroca = 0;
-        estado.tempoDesdeUltimoAumento = 0;
-        estado.nivelDificuldade = 0;
-        estado.binXPercent = 50;
-        estado.categoriaAtualIndex = Math.floor(Math.random() * estado.categorias.length);
-
-        telaInicio.classList.add('hidden');
-        telaFim.classList.add('hidden');
-        telaJogo.classList.remove('hidden');
-        overlayPausaEl.classList.add('hidden');
-
-        renderizarBin();
-        aplicarVisualCategoria(false);
+    function aplicarEstadoServidor(snapshot) {
+        const anterior = estado.pontuacao;
+        const categoriaAnterior = estado.categoriaAtualIndex;
+        estado.status = snapshot.status;
+        estado.pontuacao = snapshot.pontuacao;
+        estado.tempoRestante = Math.max(0, 60 - snapshot.tempoTotalMs / 1000);
+        estado.categoriaAtualIndex = snapshot.categoriaIndex;
+        overlayPausaEl.classList.toggle('hidden', snapshot.status !== 'pausado');
         atualizarPontuacaoHud();
         atualizarHudTempo();
-        somComeco();
-
-        estado.ultimoTimestamp = null;
-        estado.rafId = requestAnimationFrame(loopJogo);
+        aplicarVisualCategoria(categoriaAnterior !== snapshot.categoriaIndex);
+        if (categoriaAnterior !== snapshot.categoriaIndex) mostrarAvisoCategoria();
+        if (snapshot.pontuacao > anterior) somAcerto();
+        if (snapshot.pontuacao < anterior) somErro();
+        // Fixed 800 x 500 world, scaled identically for rendering on every screen.
+        lixeiraJogadorEl.style.width = (110 / 800 * 100) + '%';
+        lixeiraJogadorEl.style.height = (70 / 500 * 100) + '%';
+        lixeiraJogadorEl.style.bottom = (8 / 500 * 100) + '%';
+        const existentes = new Map(estado.itensAtivos.map(r => [r.id, r]));
+        estado.itensAtivos = snapshot.itens.map(item => {
+            let residuo = existentes.get(item.id);
+            if (!residuo) {
+                const elemento = document.createElement('div');
+                elemento.className = 'residuo-caindo';
+                const imagem = document.createElement('img');
+                imagem.src = item.item.imagemUrl;
+                imagem.alt = item.item.nome;
+                imagem.style.maxWidth = '100%';
+                imagem.style.maxHeight = '100%';
+                elemento.appendChild(imagem);
+                elemento.style.width = (54 / 800 * 100) + '%';
+                elemento.style.height = (54 / 500 * 100) + '%';
+                elemento.style.transition = 'top 100ms linear';
+                areaJogo.appendChild(elemento);
+                residuo = { id: item.id, elemento };
+            }
+            existentes.delete(item.id);
+            residuo.elemento.style.left = (item.x / 800 * 100) + '%';
+            residuo.elemento.style.top = (item.y / 500 * 100) + '%';
+            return residuo;
+        });
+        existentes.forEach(r => r.elemento.remove());
     }
 
     function reiniciarPartida() {
@@ -1035,7 +1091,8 @@
 
     async function finalizarPartida() {
         estado.status = 'fim';
-        limparResiduosVisuais();
+        btnJogarNovamente.disabled = true;
+        limparResiduosETimers();
         pararSomTempoPassando();
 
         telaJogo.classList.add('hidden');
@@ -1054,7 +1111,7 @@
         tabelaEl.innerHTML = '<p class="ranking-vazio">Carregando ranking...</p>';
 
         try {
-            await submeterPontuacao(nomeJogadorAtual, dificuldadeSelecionada, estado.pontuacao, tempoTotalMs);
+            await submeterPontuacao(partidaId);
             rankingCacheAtual = await buscarTodosRankingsCachoeira();
             criarTabsRanking(tabsEl, tabelaEl, dificuldadeSelecionada, {
                 nome: nomeJogadorAtual,
@@ -1064,7 +1121,9 @@
             });
         } catch (erro) {
             console.error('Erro ao registrar/carregar ranking:', erro);
-            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível carregar o ranking.</p>';
+            tabelaEl.innerHTML = '<p class="ranking-vazio">Não foi possível confirmar o registro ou carregar o ranking.</p>';
+        } finally {
+            btnJogarNovamente.disabled = false;
         }
     }
 
@@ -1081,6 +1140,7 @@
     }
 
     function limparResiduosETimers() {
+        clearTimeout(sincronizacaoTimer);
         if (estado.rafId) {
             cancelAnimationFrame(estado.rafId);
             estado.rafId = null;
@@ -1091,6 +1151,7 @@
     }
 
     function voltarAoMenuInicioJogo() {
+        geracaoPartida++;
         somClique();
         estado.status = 'inicio';
         limparResiduosETimers();
@@ -1100,60 +1161,24 @@
     }
 
     function alternarPausa() {
-        if (estado.status === 'jogando') {
-            estado.status = 'pausado';
-            overlayPausaEl.classList.remove('hidden');
-            pararSomTempoPassando();
-            somClique();
-        } else if (estado.status === 'pausado') {
-            estado.status = 'jogando';
-            overlayPausaEl.classList.add('hidden');
-            estado.ultimoTimestamp = null;
-            somClique();
-        }
+        if (estado.status !== 'jogando' && estado.status !== 'pausado') return;
+        comandoPendente = estado.status === 'pausado' ? 'CONTINUAR' : 'PAUSAR';
+        somClique();
     }
 
-    // ===== Loop principal (baseado em delta-time, facil de pausar) =====
-
+    // Animation only samples local controls. Time and outcomes come from the server.
     function loopJogo(timestamp) {
-        if (estado.status === 'jogando') {
-            if (estado.ultimoTimestamp === null) {
-                estado.ultimoTimestamp = timestamp;
-            }
-            const dt = Math.min((timestamp - estado.ultimoTimestamp) / 1000, 0.05);
-            estado.ultimoTimestamp = timestamp;
-
-            atualizarTempo(dt);
-            atualizarMovimentoLixeira(dt);
-            atualizarSpawn(dt);
-            moverResiduos(dt);
-            atualizarTrocaCategoria(dt);
-            atualizarDificuldade(dt);
-        } else {
-            estado.ultimoTimestamp = null;
-        }
-
+        const dt = estado.ultimoTimestamp === null ? 0 : Math.min((timestamp - estado.ultimoTimestamp) / 1000, .05);
+        estado.ultimoTimestamp = timestamp;
+        if (estado.status === 'jogando') atualizarMovimentoLixeira(dt);
         if (estado.status === 'jogando' || estado.status === 'pausado') {
             estado.rafId = requestAnimationFrame(loopJogo);
         }
     }
 
-    // ===== Tempo =====
-
-    function atualizarTempo(dt) {
-        estado.tempoRestante -= dt;
-        if (estado.tempoRestante <= 0) {
-            estado.tempoRestante = 0;
-            atualizarHudTempo();
-            finalizarPartida();
-            return;
-        }
-        atualizarHudTempo();
-    }
-
     function atualizarHudTempo() {
         hudTempo.textContent = `Tempo: ${Math.ceil(estado.tempoRestante)}s`;
-        const critico = estado.tempoRestante <= 10 && estado.tempoRestante > 0;
+        const critico = estado.status === 'jogando' && estado.tempoRestante <= 10 && estado.tempoRestante > 0;
         hudTempo.classList.toggle('timer-danger', critico);
         areaJogo.classList.toggle('tempo-critico', critico);
         if (critico) {
@@ -1166,10 +1191,7 @@
     // ===== Movimento da lixeira (mouse, toque e teclado) =====
 
     function definirBinPercent(percent) {
-        const areaWidth = areaJogo.clientWidth || 1;
-        const minPercent = (LARGURA_BIN_PX / 2 / areaWidth) * 100;
-        const maxPercent = 100 - minPercent;
-        estado.binXPercent = Math.min(maxPercent, Math.max(minPercent, percent));
+        estado.binXPercent = Math.min(93.125, Math.max(6.875, percent));
         renderizarBin();
     }
 
@@ -1220,170 +1242,12 @@
         if (estado.teclaDireita) definirBinPercent(estado.binXPercent + velocidadeTecladoPercentPorSeg * dt);
     }
 
-    // ===== Geracao e queda dos residuos =====
-
-    function atualizarSpawn(dt) {
-        estado.acumuladorSpawnMs += dt * 1000;
-        if (estado.acumuladorSpawnMs >= estado.intervaloSpawnMs) {
-            estado.acumuladorSpawnMs = 0;
-            gerarResiduoAleatorio();
-        }
-    }
-
-    function gerarResiduoAleatorio() {
-        if (!estado.itensPool.length) return;
-
-        const item = estado.itensPool[Math.floor(Math.random() * estado.itensPool.length)];
-        const largura = 54;
-        const areaWidth = areaJogo.clientWidth;
-        const x = Math.random() * Math.max(0, areaWidth - largura);
-
-        const elemento = document.createElement('div');
-        elemento.className = 'residuo-caindo';
-        elemento.style.left = x + 'px';
-        elemento.style.top = '-60px';
-        elemento.innerHTML = `<img src="${item.imagemUrl}" alt="${item.nome}">`;
-        areaJogo.appendChild(elemento);
-
-        estado.itensAtivos.push({
-            elemento,
-            x,
-            y: -60,
-            largura,
-            altura: 54,
-            categoria: (item.categoria || '').toLowerCase(),
-            resolvido: false
-        });
-    }
-
-    function moverResiduos(dt) {
-        const areaHeight = areaJogo.clientHeight;
-        const areaWidth = areaJogo.clientWidth;
-        const binCenterPx = areaWidth * (estado.binXPercent / 100);
-        const binLeftPx = binCenterPx - LARGURA_BIN_PX / 2;
-        const binRightPx = binCenterPx + LARGURA_BIN_PX / 2;
-        const binTopPx = areaHeight - 78;
-        const binBottomPx = areaHeight - 8;
-
-        for (let i = estado.itensAtivos.length - 1; i >= 0; i--) {
-            const residuo = estado.itensAtivos[i];
-            if (residuo.resolvido) continue;
-
-            residuo.y += estado.velocidadeQueda * dt;
-            residuo.elemento.style.top = residuo.y + 'px';
-
-            const dentroFaixaBin = (residuo.y + residuo.altura) >= binTopPx && residuo.y <= binBottomPx;
-            if (dentroFaixaBin && detectarColisaoHorizontal(residuo, binLeftPx, binRightPx)) {
-                resolverCaptura(residuo);
-                continue;
-            }
-
-            if (residuo.y > areaHeight) {
-                resolverQueda(residuo);
-            }
-        }
-    }
-
-    function detectarColisaoHorizontal(residuo, binLeftPx, binRightPx) {
-        return (residuo.x + residuo.largura) >= binLeftPx && residuo.x <= binRightPx;
-    }
-
     function categoriaAtual() {
         return estado.categorias[estado.categoriaAtualIndex];
     }
 
-    function itemCorrespondeCategoriaAtual(residuo) {
-        const cat = categoriaAtual();
-        return !!cat && residuo.categoria === (cat.categoriaAceita || '').toLowerCase();
-    }
-
-    function resolverCaptura(residuo) {
-        residuo.resolvido = true;
-        const acertou = itemCorrespondeCategoriaAtual(residuo);
-
-        if (acertou) {
-            atualizarPontuacao(10);
-            mostrarFeedbackFlutuante('+10', 'positivo', residuo.x, residuo.y);
-            somAcerto();
-            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-sucesso');
-        } else {
-            atualizarPontuacao(-5);
-            mostrarFeedbackFlutuante('-5', 'negativo', residuo.x, residuo.y);
-            somErro();
-            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-erro');
-        }
-
-        removerResiduo(residuo);
-    }
-
-    function resolverQueda(residuo) {
-        residuo.resolvido = true;
-
-        if (itemCorrespondeCategoriaAtual(residuo)) {
-            atualizarPontuacao(-5);
-            somErro();
-            tocarAnimacao(lixeiraJogadorEl, 'lixeira-jogador-erro');
-        }
-        // Residuo de outra categoria: sai da tela sem penalidade.
-
-        removerResiduo(residuo);
-    }
-
-    function removerResiduo(residuo) {
-        residuo.elemento.remove();
-        const indice = estado.itensAtivos.indexOf(residuo);
-        if (indice >= 0) estado.itensAtivos.splice(indice, 1);
-    }
-
-    function mostrarFeedbackFlutuante(texto, tipo, x, y) {
-        const el = document.createElement('div');
-        el.className = 'feedback-flutuante ' + (tipo === 'positivo' ? 'feedback-positivo' : 'feedback-negativo');
-        el.textContent = texto;
-        el.style.left = x + 'px';
-        el.style.top = y + 'px';
-        areaJogo.appendChild(el);
-        el.addEventListener('animationend', () => el.remove(), { once: true });
-    }
-
-    // ===== Pontuacao =====
-
-    function atualizarPontuacao(delta) {
-        estado.pontuacao = Math.max(0, estado.pontuacao + delta);
-        atualizarPontuacaoHud();
-    }
-
     function atualizarPontuacaoHud() {
         hudPontuacao.textContent = estado.pontuacao + ' pontos';
-    }
-
-    // ===== Troca de categoria da lixeira =====
-
-    function atualizarTrocaCategoria(dt) {
-        estado.tempoDesdeUltimaTroca += dt;
-        if (estado.tempoDesdeUltimaTroca < estado.tempoParaTrocarCategoria) return;
-
-        const areaHeight = areaJogo.clientHeight;
-        const algumItemProximo = estado.itensAtivos.some(r => !r.resolvido && r.y > areaHeight - 140);
-        if (algumItemProximo && estado.tempoDesdeUltimaTroca < estado.tempoParaTrocarCategoria + 1) {
-            return; // evita trocar bem no instante da colisao, espera ate 1s a mais
-        }
-
-        trocarCategoriaLixeira();
-    }
-
-    function trocarCategoriaLixeira() {
-        estado.tempoDesdeUltimaTroca = 0;
-
-        if (estado.categorias.length > 1) {
-            let novoIndex = estado.categoriaAtualIndex;
-            while (novoIndex === estado.categoriaAtualIndex) {
-                novoIndex = Math.floor(Math.random() * estado.categorias.length);
-            }
-            estado.categoriaAtualIndex = novoIndex;
-        }
-
-        aplicarVisualCategoria(true);
-        mostrarAvisoCategoria();
     }
 
     function aplicarVisualCategoria(comAnimacao) {
@@ -1415,23 +1279,6 @@
         }, 1800);
     }
 
-    // ===== Dificuldade progressiva =====
-
-    function atualizarDificuldade(dt) {
-        estado.tempoDesdeUltimoAumento += dt;
-        if (estado.tempoDesdeUltimoAumento >= 12) {
-            estado.tempoDesdeUltimoAumento = 0;
-            aumentarDificuldade();
-        }
-    }
-
-    function aumentarDificuldade() {
-        estado.nivelDificuldade++;
-        estado.velocidadeQueda = Math.min(estado.velocidadeQueda * 1.12, 320);
-        estado.intervaloSpawnMs = Math.max(estado.intervaloSpawnMs * 0.9, 550);
-        estado.tempoParaTrocarCategoria = Math.max(estado.tempoParaTrocarCategoria - 1, 11);
-    }
-
     // ===== Ranking =====
 
     function escapeHtml(texto) {
@@ -1440,16 +1287,8 @@
         return div.innerHTML;
     }
 
-    async function submeterPontuacao(nomeJogador, dificuldade, pontuacao, tempoTotalMs) {
-        const response = await fetch('/api/ranking/cachoeira-lixo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nomeJogador, dificuldade, pontuacao, tempoTotalMs })
-        });
-        if (!response.ok) {
-            throw new Error('Falha ao registrar pontuação');
-        }
-        return response.json();
+    async function submeterPontuacao(sessionId) {
+        return apiPartida('/api/ranking/cachoeira-lixo', { sessionId });
     }
 
     async function buscarTodosRankingsCachoeira() {
