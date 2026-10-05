@@ -96,3 +96,11 @@ src/main/resources/static/
 ├── manual_jogo_reciclagem.html   # manual ilustrado
 └── css/  images/  sounds/
 ```
+
+## Segurança do ranking da Cachoeira
+
+A Cachoeira usa simulação no servidor e uma partida vinculada ao navegador. O cliente
+envia controles; pontuação, tempo e conclusão são calculados no backend. Veja o
+[contrato da API, testes e instruções de validação](docs/cachoeira-ranking.md).
+
+Execute `mvn test` para rodar os testes de regressão e tentativas de fraude.
