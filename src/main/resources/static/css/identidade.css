@@ -117,10 +117,31 @@ button:disabled{opacity:.55;cursor:wait}
 .hud-categoria{background:#fffdf7!important;color:var(--tinta)!important}
 .hud-tempo.critico{background:#9c3026!important}
 .ranking-vazio{color:var(--suave)!important}
-#lixeiraJogador{border-radius:4px!important;color:#fff;box-shadow:none!important}
-#lixeiraJogador .lixeira-jogador-nome{background:var(--claro);color:var(--tinta);border-radius:2px;padding:2px 6px}
-.residuo-caindo,.dica-final,.overlay-pausa{border-radius:4px!important;box-shadow:none!important}
-.residuo-caindo{border:1px solid var(--linha)!important}
+#lixeiraJogador{background:transparent!important;border-radius:0!important}
+.residuo-caindo,.dica-final,.overlay-pausa{border-radius:none!important;box-shadow:none!important}
+.residuo-caindo{border:none(--linha)!important}
 .section-title{font-family:Georgia,serif!important}
 .manual-nav{display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;background:var(--papel);border-bottom:1px solid var(--linha)}
 .manual-nav a{color:var(--verde);font-size:13px;font-weight:700;min-height:24px;display:inline-flex;align-items:center}
+/* Carrossel de fundo (imagem fofa deslizando, cobre a tela toda) */
+.fundo-carrossel{
+    --tile:960px;
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:url('/images/carrossel/fofos.png');
+    background-repeat:repeat;
+    background-size:var(--tile) auto;
+    animation:carrossel-fundo 60s linear infinite;
+}
+@keyframes carrossel-fundo{
+    from{ background-position:0 0; }
+    to{ background-position:calc(var(--tile) * -1) 0; }
+}
+@media(max-width:700px){
+    .fundo-carrossel{ --tile:600px; }
+}
+@media(prefers-reduced-motion:reduce){
+    .fundo-carrossel{ animation:none!important; }
+}

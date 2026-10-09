@@ -418,63 +418,55 @@
         }
 
         .residuo-caindo{
-            position:absolute;
-            width:54px;
-            height:54px;
-            background:white;
-            border-radius:14px;
-            border:2px solid #4a8b8f;
-            box-shadow:0 4px 10px rgba(0,0,0,0.15);
-            display:flex;
-            align-items:center;
-            justify-content:center;
+        position:absolute;
+    width:54px;
+    height:54px;
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    border-radius:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
         }
 
         .residuo-caindo img{
-            width:42px;
-            height:42px;
-            object-fit:contain;
-            pointer-events:none;
-            -webkit-user-drag:none;
+             width:54px;
+    height:54px;
+    object-fit:contain;
+    pointer-events:none;
+    -webkit-user-drag:none;
         }
 
-        #lixeiraJogador{
+             #lixeiraJogador{
             position:absolute;
             bottom:8px;
             left:50%;
-            width:110px;
-            height:70px;
+            width:90px;
+            height:90px;
             transform:translateX(-50%);
-            border-radius:14px 14px 22px 22px;
+            background:transparent;
             display:flex;
-            flex-direction:column;
-            align-items:center;
+            align-items:flex-end;
             justify-content:center;
-            color:white;
-            font-weight:bold;
-            text-shadow:0 1px 3px rgba(0,0,0,0.4);
-            box-shadow:0 6px 14px rgba(0,0,0,0.3);
-            background:#4a8b8f;
-            transition:background-color 0.4s;
         }
 
-        #lixeiraJogador .lixeira-jogador-icone{
-            font-size:20px;
-            line-height:1;
-        }
-
-        #lixeiraJogador .lixeira-jogador-nome{
-            font-size:12px;
-            margin-top:2px;
+        #lixeiraJogador img{
+            width:100%;
+            height:100%;
+            object-fit:contain;
+            pointer-events:none;
+            -webkit-user-drag:none;
         }
 
         #lixeiraJogador.lixeira-jogador-troca{
             animation:lixeira-troca-anim 0.6s;
         }
 
-        @keyframes lixeira-troca-anim{
-            0%{ box-shadow:0 0 0 0 rgba(255,179,71,0.9); }
-            100%{ box-shadow:0 0 0 22px rgba(255,179,71,0); }
+            @keyframes lixeira-troca-anim{
+            0%{ filter:drop-shadow(0 0 0 rgba(255,179,71,0.9)); }
+            50%{ filter:drop-shadow(0 0 14px rgba(255,179,71,1)); }
+            100%{ filter:drop-shadow(0 0 0 rgba(255,179,71,0)); }
         }
 
         #lixeiraJogador.lixeira-jogador-sucesso{
@@ -627,7 +619,7 @@
         @media (max-width:480px){
             .tela-inicio h1{ font-size:26px; }
             .area-jogo{ height:56vh; min-height:320px; }
-            #lixeiraJogador{ width:88px; height:60px; }
+                     #lixeiraJogador{ width:76px; height:76px; }
         }
 
     </style>
@@ -639,8 +631,8 @@
 <div class="game-container">
 
     <nav class="game-toolbar" aria-label="Navegação do jogo">
-    <button class="icon-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som ligado</button>
-    <a class="icon-btn home-btn" href="/?v=20260925-2" title="Voltar ao menu de jogos">Início</a>
+        <button class="icon-btn" id="soundToggleBtn" aria-pressed="true" aria-label="Alternar som" onclick="alternarSom()" title="Ativar/desativar som">Som ligado</button>
+        <a class="icon-btn home-btn" href="/?v=20260925-2" title="Voltar ao menu de jogos">Início</a>
 
     </nav>
 
@@ -692,8 +684,7 @@
 
         <div class="area-jogo" id="areaJogo">
             <div id="lixeiraJogador">
-                <span class="lixeira-jogador-icone" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/></svg></span>
-                <span class="lixeira-jogador-nome">--</span>
+                <img id="lixeiraImg" src="" alt="Lixeira">
             </div>
             <div class="aviso-categoria" id="avisoCategoria"></div>
 
@@ -926,7 +917,8 @@
     const mensagemFinalEl = document.getElementById('mensagemFinal');
     const dicaFinalEl = document.getElementById('dicaFinal');
 
-    const LARGURA_BIN_PX = 110; // precisa bater com a largura de #lixeiraJogador no CSS
+        const larguraBin = () => lixeiraJogadorEl.offsetWidth;
+    const alturaBin = () => lixeiraJogadorEl.offsetHeight;
 
     // ===== Estado do jogo =====
 
@@ -1167,7 +1159,7 @@
 
     function definirBinPercent(percent) {
         const areaWidth = areaJogo.clientWidth || 1;
-        const minPercent = (LARGURA_BIN_PX / 2 / areaWidth) * 100;
+              const minPercent = (larguraBin() / 2 / areaWidth) * 100;
         const maxPercent = 100 - minPercent;
         estado.binXPercent = Math.min(maxPercent, Math.max(minPercent, percent));
         renderizarBin();
@@ -1259,10 +1251,11 @@
     function moverResiduos(dt) {
         const areaHeight = areaJogo.clientHeight;
         const areaWidth = areaJogo.clientWidth;
+             const margem = larguraBin() * 0.12; // a imagem quadrada tem folga transparente nas laterais
         const binCenterPx = areaWidth * (estado.binXPercent / 100);
-        const binLeftPx = binCenterPx - LARGURA_BIN_PX / 2;
-        const binRightPx = binCenterPx + LARGURA_BIN_PX / 2;
-        const binTopPx = areaHeight - 78;
+        const binLeftPx = binCenterPx - larguraBin() / 2 + margem;
+        const binRightPx = binCenterPx + larguraBin() / 2 - margem;
+        const binTopPx = areaHeight - alturaBin() - 8;
         const binBottomPx = areaHeight - 8;
 
         for (let i = estado.itensAtivos.length - 1; i >= 0; i--) {
@@ -1386,13 +1379,15 @@
         mostrarAvisoCategoria();
     }
 
-    function aplicarVisualCategoria(comAnimacao) {
+      function aplicarVisualCategoria(comAnimacao) {
         const cat = categoriaAtual();
         if (!cat) return;
 
         const cor = CORES_CATEGORIA[cat.cor] || '#4a8b8f';
-        lixeiraJogadorEl.style.backgroundColor = cor;
-        lixeiraJogadorEl.querySelector('.lixeira-jogador-nome').textContent = cat.nome;
+
+        const img = document.getElementById('lixeiraImg');
+        img.src = cat.imagemUrl;
+        img.alt = 'Lixeira de ' + cat.nome;
 
         hudCategoria.textContent = ` ${cat.nome}`;
         hudCategoria.style.backgroundColor = cor;
